@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment Attempt Prototype</title>
+<!-- PROTOTYPE, throwaway. Not part of the app build. Question below. -->
+<style>
+  :root { --bg:#f7f8f7; --card:#fff; --ink:#1a1f1c; --mute:#5d6862; --line:#dfe4e1; --accent:#15803d; --accent-soft:#e7f5ec; --bad:#b42318; --bad-soft:#fdecea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111513; --card:#181d1a; --ink:#e7ece9; --mute:#9aa59f; --line:#2b332f; --accent:#4ade80; --accent-soft:#16301f; --bad:#f87171; --bad-soft:#3a1a1a; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); margin: 0 0 12px; }
+  p.lead { color: var(--mute); margin: 0 0 24px; max-width: 70ch; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 24px; }
+  .field .k { font-size: 12px; color: var(--mute); }
+  .field .v { font-weight: 600; word-break: break-all; }
+  .changed { background: var(--accent-soft); border-radius: 6px; padding: 0 4px; margin: 0 -4px; }
+  .pill { display:inline-block; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .note { margin-top: 14px; padding: 10px 12px; border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .note.bad { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--card); font-weight: 600; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tabs button[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  ol.steps { padding-left: 20px; margin: 12px 0 0; }
+  ol.steps li { margin: 6px 0; }
+  ol.steps li.done { color: var(--mute); text-decoration: line-through; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--mute); font-weight: 500; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Rider payment: one reference per attempt</h1>
+  <p class="lead">
+    <strong>Question:</strong> In the rider app, every time the rider presses <em>Pay</em> we create a fresh reference
+    (<code>VLT-&lt;uuid&gt;</code>), ask the mock gateway to approve it, then send it to the Voltora server. The server
+    refuses any reference it has already seen. Does "a new reference per attempt" hold up when things go wrong:
+    declines, double taps, retries, and a lost connection after the server already took the money?
+  </p>
+
+  <section>
+    <h2>Right now</h2>
+    <div class="grid" id="state"></div>
+    <div id="note"></div>
+  </section>
+
+  <section>
+    <h2>Try anything</h2>
+    <div class="btns" id="free"></div>
+  </section>
+
+  <section>
+    <h2>Guided walkthroughs</h2>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <p id="scenario-desc"></p>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <section>
+    <h2>What the server has recorded</h2>
+    <table><thead><tr><th>Reference</th><th>Outcome</th><th>Rider charged</th></tr></thead><tbody id="ledger"></tbody></table>
+  </section>
+</main>
+
+<script>
+// ===== Portable logic: pure reducer, no DOM. Lift into lib/ if validated. =====
+const initial = () => ({
+  phase: 'idle',          // idle | authorizing | declined | submitting | paid | failed | unknown
+  reference: null,        // reference of the current attempt
+  attempts: 0,
+  server: [],             // [{ reference, outcome: 'charged'|'rejected'|'duplicate', charged: bool }]
+  note: 'Nothing has happened yet.',
+  bad: false,
+});
+
+const canPay = (s) => ['idle', 'declined', 'failed', 'unknown'].includes(s.phase);
+
+function reduce(s, a) {
+  const seen = (ref) => s.server.some((r) => r.reference === ref && r.outcome !== 'duplicate');
+  const ok = (patch) => ({ ...s, bad: false, ...patch });
+  const no = (note) => ({ ...s, note, bad: true });
+  switch (a.type) {
+    case 'PAY':
+      if (!canPay(s)) return no('Ignored: an attempt is already in progress. The Pay button is disabled while busy, so a double tap does nothing.');
+      return ok({ phase: 'authorizing', reference: a.reference, attempts: s.attempts + 1, note: 'New reference created on the phone. Waiting for the gateway.' });
+    case 'GATEWAY_APPROVE':
+      if (s.phase !== 'authorizing') return no('Nothing is waiting on the gateway.');
+      return ok({ phase: 'submitting', note: 'Gateway approved. Sending the reference to the Voltora server.' });
+    case 'GATEWAY_DECLINE':
+      if (s.phase !== 'authorizing') return no('Nothing is waiting on the gateway.');
+      return ok({ phase: 'declined', note: 'Declined on the phone. The server never saw this reference, so nothing was recorded.' });
+    case 'SERVER_OK':
+    case 'SERVER_LOST': {
+      if (s.phase !== 'submitting') return no('Nothing is being sent to the server.');
+      if (seen(s.reference)) return ok({ phase: 'failed', server: [...s.server, { reference: s.reference, outcome: 'duplicate', charged: false }], note: 'Server said 409: this reference was already used. Rider not charged again.' });
+      const server = [...s.server, { reference: s.reference, outcome: 'charged', charged: true }];
+      const charges = server.filter((r) => r.charged).length;
+      if (a.type === 'SERVER_OK') return ok({ phase: 'paid', server, note: charges > 1 ? `Paid, but the rider has now been charged ${charges} times.` : 'Paid. Order created.', bad: charges > 1 });
+      return ok({ phase: 'unknown', server, note: 'The server charged the rider, but the reply never reached the phone. The phone thinks it failed.' });
+    }
+    case 'SERVER_REJECT':
+      if (s.phase !== 'submitting') return no('Nothing is being sent to the server.');
+      return ok({ phase: 'failed', server: [...s.server, { reference: s.reference, outcome: 'rejected', charged: false }], note: 'Server rejected it (e.g. out of stock). The reference is now used up; a retry needs a new one.' });
+    case 'RETRY_SAME':
+      if (!['failed', 'unknown'].includes(s.phase)) return no('Only possible after a failed or lost attempt.');
+      return ok({ phase: 'submitting', note: 'Resending the SAME reference instead of making a new one.' });
+    case 'RESET':
+      return initial();
+  }
+  return s;
+}
+// ===== End portable logic =====
+
+const LABEL = { idle: 'Ready to pay', authorizing: 'Waiting for gateway', declined: 'Declined', submitting: 'Sending to server', paid: 'Paid', failed: 'Failed', unknown: 'Unknown (no reply)' };
+const BAD = ['declined', 'failed', 'unknown'];
+const newRef = () => 'VLT-' + (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
+
+const ACTIONS = [
+  { type: 'PAY', label: 'Rider presses Pay', primary: true },
+  { type: 'GATEWAY_APPROVE', label: 'Gateway approves' },
+  { type: 'GATEWAY_DECLINE', label: 'Gateway declines' },
+  { type: 'SERVER_OK', label: 'Server accepts' },
+  { type: 'SERVER_REJECT', label: 'Server rejects' },
+  { type: 'SERVER_LOST', label: 'Server charges, reply lost' },
+  { type: 'RETRY_SAME', label: 'Retry with same reference' },
+  { type: 'RESET', label: 'Start over' },
+];
+const action = (type) => (type === 'PAY' ? { type, reference: newRef() } : { type });
+
+const SCENARIOS = [
+  { name: 'Happy path', desc: 'Rider pays once, everything works. Watch a single reference go from phone to server.', steps: ['PAY', 'GATEWAY_APPROVE', 'SERVER_OK'] },
+  { name: 'Declined, then retry', desc: 'The gateway declines. The rider tries again. The second attempt gets a brand new reference, and the server only ever sees the one that went through.', steps: ['PAY', 'GATEWAY_DECLINE', 'PAY', 'GATEWAY_APPROVE', 'SERVER_OK'] },
+  { name: 'Double tap', desc: 'The rider taps Pay twice quickly. The second tap should do nothing.', steps: ['PAY', 'PAY', 'GATEWAY_APPROVE', 'SERVER_OK'] },
+  { name: 'Server rejects', desc: 'The server rejects the order after the gateway approved. Retrying with the same reference hits "already used"; the rider has to press Pay again for a new one.', steps: ['PAY', 'GATEWAY_APPROVE', 'SERVER_REJECT', 'RETRY_SAME', 'SERVER_OK', 'PAY', 'GATEWAY_APPROVE', 'SERVER_OK'] },
+  { name: 'Lost reply (the risky one)', desc: 'The server takes the money but the phone never hears back. The rider presses Pay again, which makes a new reference, and the server happily charges a second time. Watch the ledger.', steps: ['PAY', 'GATEWAY_APPROVE', 'SERVER_LOST', 'PAY', 'GATEWAY_APPROVE', 'SERVER_OK'] },
+  { name: 'Lost reply, same reference', desc: 'Same situation, but the phone resends the SAME reference. The server recognises it and refuses to charge twice. This is what a safe retry looks like.', steps: ['PAY', 'GATEWAY_APPROVE', 'SERVER_LOST', 'RETRY_SAME', 'SERVER_OK'] },
+];
+
+let state = initial(), prev = state, tab = 0, step = 0;
+
+function dispatch(a) { prev = state; state = reduce(state, a); render(); }
+
+function render() {
+  const fields = [
+    ['Status', 'phase', `<span class="pill ${BAD.includes(state.phase) ? 'bad' : ''}">${LABEL[state.phase]}</span>`],
+    ['Current reference', 'reference', state.reference ? `<code>${state.reference}</code>` : '—'],
+    ['Attempts so far', 'attempts', state.attempts],
+    ['Times rider was charged', 'server', state.server.filter((r) => r.charged).length],
+  ];
+  document.getElementById('state').innerHTML = fields.map(([k, key, v]) =>
+    `<div class="field"><div class="k">${k}</div><div class="v ${prev[key] !== state[key] ? 'changed' : ''}">${v}</div></div>`).join('');
+  document.getElementById('note').innerHTML = `<div class="note ${state.bad ? 'bad' : ''}">${state.note}</div>`;
+  document.getElementById('ledger').innerHTML = state.server.length
+    ? state.server.map((r) => `<tr><td><code>${r.reference}</code></td><td>${r.outcome === 'duplicate' ? 'Refused: already used' : r.outcome === 'rejected' ? 'Rejected' : 'Charged'}</td><td>${r.charged ? 'Yes' : 'No'}</td></tr>`).join('')
+    : '<tr><td colspan="3">Nothing yet.</td></tr>';
+
+  const sc = SCENARIOS[tab];
+  document.getElementById('tabs').innerHTML = SCENARIOS.map((s, i) => `<button role="tab" aria-selected="${i === tab}" data-tab="${i}">${s.name}</button>`).join('');
+  document.getElementById('scenario-desc').textContent = sc.desc;
+  document.getElementById('steps').innerHTML = sc.steps.map((t, i) =>
+    `<li class="${i < step ? 'done' : ''}"><button ${i === step ? 'class="primary"' : ''} ${i !== step ? 'disabled' : ''} data-step="${i}">${ACTIONS.find((a) => a.type === t).label}</button></li>`).join('')
+    + (step >= sc.steps.length ? '<li style="list-style:none;margin-left:-20px;color:var(--mute)">Done. Pick another tab, or keep playing above.</li>' : '');
+}
+
+document.getElementById('free').innerHTML = ACTIONS.map((a) => `<button data-act="${a.type}" ${a.primary ? 'class="primary"' : ''}>${a.label}</button>`).join('');
+document.getElementById('free').onclick = (e) => { const t = e.target.dataset.act; if (t) dispatch(action(t)); };
+document.getElementById('tabs').onclick = (e) => { if (e.target.dataset.tab) { tab = +e.target.dataset.tab; step = 0; prev = state = initial(); render(); } };
+document.getElementById('steps').onclick = (e) => { if (e.target.dataset.step) { dispatch(action(SCENARIOS[tab].steps[step])); step++; render(); } };
+render();
+</script>
+</body>
+</html>
