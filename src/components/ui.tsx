@@ -128,7 +128,7 @@ export function Stat({ label, value, sub, tone }: { label: ReactNode; value: Rea
 
 /* ---------- Status ---------- */
 const GOOD = ['COMPLETED', 'SUCCEEDED', 'CHARGED', 'NORMAL', 'ACTIVE', 'AVAILABLE', 'DONE', 'PAID', 'TRUE', 'OK', 'READY', 'UNLOCKED', 'CONFIRMED', 'LIVE'];
-const WARN = ['PENDING', 'PENDING_PAYMENT', 'WARNING', 'CHARGING', 'ONE_LEFT', 'RESERVED', 'RESERVED_VIP', 'IN_PROGRESS', 'PARTIALLY_REFUNDED', 'ON_VAN', 'IN_USE', 'BOOKED', 'WEAK_PACK', 'LOW_SUPPLY'];
+const WARN = ['PENDING', 'PENDING_PAYMENT', 'AWAITING_APPROVAL', 'WARNING', 'CHARGING', 'ONE_LEFT', 'RESERVED', 'RESERVED_VIP', 'IN_PROGRESS', 'PARTIALLY_REFUNDED', 'ON_VAN', 'IN_USE', 'BOOKED', 'WEAK_PACK', 'LOW_SUPPLY'];
 const BAD = ['FAILED', 'CRITICAL', 'RETIRE', 'RETIRED', 'FULL', 'CANCELLED', 'EXPIRED', 'LOCKED', 'DEPLETED', 'STOCK_OUT', 'OVER_TEMP', 'LOCKOUT', 'MAINTENANCE', 'REFUNDED', 'FALSE', 'PACK_RETIRED', 'ERROR', 'DOWN'];
 
 export function Badge({ value, className }: { value: unknown; className?: string }) {

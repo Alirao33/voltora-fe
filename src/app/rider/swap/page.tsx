@@ -1,13 +1,13 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Rider } from '@/lib/endpoints';
 import { useAction, useForm } from '@/lib/hooks';
 import { type OrderMode, type PaymentMethod } from '@/lib/types';
 import { authorizeOrThrow, maybePaidHint, newPaymentReference, shouldRotateReference } from '@/lib/mockGateway';
-import { cx, getPosition, localToIso, toNum } from '@/lib/format';
-import { MockPaymentFields, StationSelect } from '@/components/domain';
-import { Button, Card, Checkbox, Field, Input, PageHeader, Textarea } from '@/components/ui';
+import { cx, getPosition, localToIso } from '@/lib/format';
+import { MiniMap, StationSelect } from '@/components/domain';
+import { Button, Card, Field, Input, Modal, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 
 const MODES: { v: OrderMode; t: string; d: string }[] = [
@@ -16,8 +16,20 @@ const MODES: { v: OrderMode; t: string; d: string }[] = [
   { v: 'HOME', t: 'Home delivery', d: 'A van brings a pack to you' },
 ];
 
+// Standard e-bike pack sizes (volts, amp-hours). 48V 15Ah is the most common.
+const SIZES = [
+  { v: 36, ah: 10 }, { v: 36, ah: 15 }, { v: 48, ah: 10 }, { v: 48, ah: 15 }, { v: 48, ah: 20 }, { v: 52, ah: 20 },
+];
+const CUSTOM = 'custom';
+const USED_FRACTION = 0.8; // matches the backend default
+
 export default function NewSwap() {
   const router = useRouter();
+  const [gate, setGate] = useState(false);
+  const [payLater, setPayLater] = useState(false);
+  const [sub, setSub] = useState<{ ends_at: string } | null>(null);
+  const [size, setSize] = useState('');
+  const [customAh, setCustomAh] = useState('');
   const toast = useToast();
   const [pos, setPos] = useState<{ lat: number; lon: number } | null>(null);
   const [lastRef, setLastRef] = useState<string | null>(null);
@@ -27,7 +39,6 @@ export default function NewSwap() {
     station_id: '',
     locker_id: '',
     use_subscription: true,
-    capacity_used_ah: '',
     payment_method: 'RAAST' as PaymentMethod,
     mock_decline: false,
     scheduled_time: '',
@@ -36,28 +47,49 @@ export default function NewSwap() {
   const { run, busy } = useAction();
   const v = f.values;
 
+  useEffect(() => {
+    Rider.subscription().then((s) => setSub(s || null)).catch(() => {});
+  }, []);
+  // Pay-later bills fall due 2 days after the locker pass ends.
+  const dueDate = sub ? new Date(new Date(sub.ends_at).getTime() + 2 * 864e5).toLocaleDateString('en-PK') : '';
+
   const locate = () => getPosition().then((p) => { setPos(p); toast.success('Location attached'); }).catch((e) => toast.error(e.message));
 
+  // Step 1: validate, then open the payment gateway (bill ID + pay now / pay later).
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (v.mode === 'HOME' && !v.delivery_address && !pos) return toast.error('Add a delivery address or attach your location');
+    if (v.mode === 'HOME' && !v.delivery_address.trim()) return toast.error('Enter your delivery address');
+    if (size === CUSTOM && !(Number(customAh) > 0)) return toast.error('Enter your custom battery capacity in Ah');
+    // The rider must choose where: a station, or an attached location (always for home delivery).
+    if (v.mode === 'HOME' && !pos) return toast.error('Select your delivery location first');
+    if (!v.station_id && !pos) return toast.error('Select a station or attach your location before ordering');
+    refId.current ??= newPaymentReference();
+    setLastRef(refId.current);
+    setPayLater(false);
+    setGate(true);
+  };
+
+  // Step 2: pay now (gateway authorises first) or reserve and pay the bill later.
+  const confirmGate = async () => {
+    const packAh = size === CUSTOM ? Number(customAh) : size ? Number(size.split('-')[1]) : 0;
+    const capacityUsed = packAh ? Math.round(packAh * USED_FRACTION * 100) / 100 : null;
     const o = await run(
       async () => {
         try {
           let reference: string | null = null;
-          if (!v.use_subscription) {
+          if (!payLater) {
             refId.current ??= newPaymentReference();
-            setLastRef(refId.current);
-            reference = (await authorizeOrThrow({ reference: refId.current, method: v.payment_method, outcome: v.mock_decline ? 'decline' : 'approve' })).reference;
+            reference = (await authorizeOrThrow({ reference: refId.current, method: v.payment_method, outcome: 'approve' })).reference;
           }
           return await Rider.createOrder({
             station_id: v.station_id || null,
             latitude: pos?.lat ?? null,
             longitude: pos?.lon ?? null,
             mode: v.mode,
-            use_subscription: v.use_subscription,
-            capacity_used_ah: toNum(v.capacity_used_ah),
-            payment_method: v.use_subscription ? null : v.payment_method,
+            use_subscription: false,
+            pay_later: payLater,
+            capacity_used_ah: capacityUsed,
+            payment_method: payLater ? null : v.payment_method,
             payment_reference: reference,
             scheduled_time: localToIso(v.scheduled_time),
             locker_id: v.mode === 'LOCKER' ? v.locker_id || null : null,
@@ -72,8 +104,10 @@ export default function NewSwap() {
       },
       (r) => `Order ${r.order_id} created`,
     );
-    if (o) refId.current = null;
-    if (o) router.push(`/rider/orders/${o.id}`);
+    if (o) {
+      refId.current = null;
+      router.push(`/rider/orders/${o.id}`);
+    }
   };
 
   return (
@@ -106,28 +140,92 @@ export default function NewSwap() {
             </Field>
             {v.mode === 'LOCKER' && <Field label="Locker ID (optional)"><Input {...f.bind('locker_id')} placeholder="Any free locker" /></Field>}
             {v.mode === 'HOME' && (
+              <Field label="Delivery location (required)" className="sm:col-span-2" hint={pos ? `Pinned at ${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}` : 'Tap to use your current location. The van driver sees this pin.'}>
+                <div className="space-y-3">
+                  <Button type="button" variant="secondary" onClick={locate}>📍 {pos ? 'Update my location' : 'Use my current location'}</Button>
+                  {pos && <MiniMap lat={pos.lat} lon={pos.lon} className="h-48" />}
+                </div>
+              </Field>
+            )}
+            {v.mode === 'HOME' && (
               <Field label="Delivery address" className="sm:col-span-2"><Textarea {...f.bind('delivery_address')} maxLength={300} placeholder="House, street, area, landmark" /></Field>
             )}
-            <Field label="Capacity used (Ah, optional)" hint="Defaults to 80% of the issued pack"><Input type="number" step="0.1" min={0.1} max={200} {...f.bind('capacity_used_ah')} /></Field>
+            <Field label="Battery size" hint="Standard e-bike packs. Used to estimate the energy you will use (80% of the pack).">
+              <Select
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                options={[
+                  { value: '', label: 'Auto (issued pack)' },
+                  ...SIZES.map((s) => ({ value: `${s.v}-${s.ah}`, label: `${s.v}V ${s.ah}Ah (${s.v * s.ah} Wh)` })),
+                  { value: CUSTOM, label: 'Custom size…' },
+                ]}
+              />
+            </Field>
+            {size === CUSTOM && (
+              <Field label="Custom pack capacity (Ah)" hint="Enter your bike's battery capacity">
+                <Input type="number" step="0.1" min={0.1} max={250} value={customAh} onChange={(e) => setCustomAh(e.target.value)} />
+              </Field>
+            )}
             <Field label="Schedule for (optional)"><Input type="datetime-local" {...f.bind('scheduled_time')} /></Field>
           </div>
         </Card>
 
-        <Card title="Payment">
-          <Checkbox label="Use a swap from my subscription" {...f.check('use_subscription')} />
-          {!v.use_subscription && (
-            <div className="mt-4">
-              <MockPaymentFields method={v.payment_method} decline={v.mock_decline} onMethod={(m) => f.set('payment_method', m)} onDecline={(d) => f.set('mock_decline', d)} lastReference={lastRef} />
-              <p className="mt-2 text-xs text-ink-500">A fresh payment reference (UUID) is generated each time you submit. Final price is settled after the swap based on actual energy used.</p>
-            </div>
-          )}
-        </Card>
+        <p className="text-xs text-ink-500">
+          The swap price depends on the battery's state of health and charge. You'll get a bill ID and choose how to pay on the next step.
+        </p>
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
-          <Button type="submit" size="lg" loading={busy}>Reserve battery</Button>
+          <Button type="submit" size="lg">Reserve battery</Button>
         </div>
       </form>
+
+      <Modal
+        open={gate}
+        onClose={() => !busy && setGate(false)}
+        title="Payment gateway"
+        footer={
+          <>
+            <Button variant="ghost" disabled={busy} onClick={() => setGate(false)}>Back</Button>
+            <Button loading={busy} onClick={confirmGate}>{payLater ? 'Reserve & pay later' : 'Pay now'}</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <div className="text-xs text-ink-500">Bill ID</div>
+            <code className="break-all font-mono text-sm text-volt-700">{lastRef}</code>
+          </div>
+          {sub && (
+            <div className="grid grid-cols-2 gap-2">
+              {[{ later: false, t: 'Pay now' }, { later: true, t: 'Pay later' }].map((o) => (
+                <button
+                  type="button"
+                  key={o.t}
+                  onClick={() => setPayLater(o.later)}
+                  className={cx('rounded-xl border p-3 text-sm font-medium', payLater === o.later ? 'border-volt-500 bg-volt-50 ring-2 ring-volt-500/20' : 'border-ink-200 hover:border-ink-300')}
+                >
+                  {o.t}
+                </button>
+              ))}
+            </div>
+          )}
+          {payLater ? (
+            <p className="text-sm text-ink-600">
+              Your bill is due by <b>{dueDate}</b> (2 days after your pass ends). After that a 5% penalty is added to the actual amount.
+            </p>
+          ) : (
+            <Field label="Payment method">
+              <Select
+                value={v.payment_method}
+                onChange={(e) => f.set('payment_method', e.target.value as PaymentMethod)}
+                options={[{ value: 'RAAST', label: 'Raast' }, { value: 'WALLET', label: 'Mobile wallet' }, { value: 'CARD', label: 'Card' }]}
+              />
+            </Field>
+          )}
+          {!sub && <p className="text-xs text-ink-500">Payment is required immediately. Subscribed riders can pay later.</p>}
+        </div>
+      </Modal>
     </div>
   );
 }

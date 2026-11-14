@@ -19,6 +19,7 @@ function AdminLoginInner() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [challenge, setChallenge] = useState<any>(null);
   const [code, setCode] = useState('');
 
@@ -56,9 +57,8 @@ function AdminLoginInner() {
     if (token) await finish(token);
   };
 
-  const devCode = process.env.NODE_ENV !== 'production'
-    ? challenge?.dev_code ?? challenge?.code ?? challenge?.debug_code
-    : null;
+  // The backend only includes dev_code outside production, so show it whenever it is present.
+  const devCode = challenge?.dev_code ?? challenge?.code ?? challenge?.debug_code;
 
   return (
     <AuthLayout
@@ -72,14 +72,24 @@ function AdminLoginInner() {
             <Input value={username} onChange={(e) => setUsername(e.target.value)} required autoComplete="username" />
           </Field>
           <Field label="Password">
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+            <div className="relative">
+              <Input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" className="pr-16" />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+                className="absolute inset-y-0 right-3 text-sm font-medium text-ink-500 hover:text-ink-800"
+              >
+                {showPw ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </Field>
           <Button type="submit" variant="dark" className="w-full" loading={busy}>Continue</Button>
         </form>
       ) : (
         <form onSubmit={step2} className="space-y-4">
           <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm text-ink-600">
-            Step 2 of 2 · Challenge <span className="font-mono">#{challenge.challenge_id}</span>
+            Step 2 of 2 · Challenge <span className="font-mono">{challenge.challenge_id}</span>
             {challenge.channel && <> · sent via {challenge.channel}</>}
             {devCode && <div className="mt-1 text-xs">Dev code: <span className="font-mono font-semibold">{devCode}</span></div>}
           </div>

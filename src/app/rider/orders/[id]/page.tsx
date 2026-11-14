@@ -1,14 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Rider } from '@/lib/endpoints';
 import { useAction, useApi } from '@/lib/hooks';
 import { cx, dt, pkr } from '@/lib/format';
+import type { PaymentMethod } from '@/lib/types';
+import { authorizeOrThrow, maybePaidHint, newPaymentReference, shouldRotateReference } from '@/lib/mockGateway';
 import { AutoView, RawJson } from '@/components/AutoView';
-import { Badge, Button, Card, ErrorBox, Field, Input, Loading, Modal, Mono, Textarea } from '@/components/ui';
+import { Badge, Button, Card, ErrorBox, Field, Input, Loading, Modal, Mono, Select, Textarea } from '@/components/ui';
 
 const FLOW = ['PENDING_PAYMENT', 'PAID', 'IN_PROGRESS', 'COMPLETED'];
+const HOME_FLOW = ['AWAITING_APPROVAL', 'PAID', 'IN_PROGRESS', 'COMPLETED']; // admin approves before the van is dispatched
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,12 +23,35 @@ export default function OrderDetail() {
   const [review, setReview] = useState('');
   const [receipt, setReceipt] = useState<any>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [billMethod, setBillMethod] = useState<PaymentMethod>('RAAST');
+  const billRef = useRef<string | null>(null);
+  const [billId, setBillId] = useState<string | null>(null);
+
+  // First click shows the bill ID, second click pays it (same flow as the plan checkout).
+  const payBill = async () => {
+    if (!o) return;
+    if (!billId) {
+      billRef.current ??= newPaymentReference();
+      return setBillId(billRef.current);
+    }
+    const r = await act.run(async () => {
+      try {
+        const auth = await authorizeOrThrow({ reference: billRef.current!, method: billMethod, amount_pkr: o.bill_due_pkr ?? 0, outcome: 'approve' });
+        return await Rider.payBill(o.id, { payment_method: billMethod, payment_reference: auth.reference });
+      } catch (err: any) {
+        if (shouldRotateReference(err)) { billRef.current = null; setBillId(null); }
+        throw Object.assign(err, { message: err.message + maybePaidHint(err) });
+      }
+    }, 'Bill paid');
+    if (r) { billRef.current = null; setBillId(null); setData(r); }
+  };
 
   if (loading) return <Loading />;
   if (error || !o) return <ErrorBox error={error || 'Order not found'} onRetry={reload} />;
 
   const update = (r?: any) => r && setData(r);
-  const step = FLOW.indexOf(o.status);
+  const flow = o.mode === 'HOME' ? HOME_FLOW : FLOW;
+  const step = flow.indexOf(o.status);
   const closed = ['COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'].includes(o.status);
 
   return (
@@ -47,7 +73,7 @@ export default function OrderDetail() {
       {/* progress */}
       {step >= 0 && (
         <div className="flex items-center gap-2">
-          {FLOW.map((s, i) => (
+          {flow.map((s, i) => (
             <div key={s} className="flex flex-1 items-center gap-2">
               <div className={cx('h-1.5 flex-1 rounded-full', i <= step ? 'bg-volt-500' : 'bg-ink-200')} />
               <span className={cx('hidden text-xs sm:inline', i <= step ? 'font-medium text-ink-800' : 'text-ink-400')}>{s.replace('_', ' ').toLowerCase()}</span>
@@ -58,7 +84,22 @@ export default function OrderDetail() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
         <div className="space-y-6">
-          {o.pickup_code && !closed && (
+          {o.status === 'AWAITING_APPROVAL' && (
+            <Card title="Waiting for admin approval">
+              <p className="text-sm text-ink-600">
+                Your home delivery has been placed. Once an admin approves it, a delivery van is dispatched to your address. You can cancel until then.
+              </p>
+            </Card>
+          )}
+
+          {o.mode === 'HOME' && o.driver_name && !['CANCELLED', 'EXPIRED', 'FAILED'].includes(o.status) && (
+            <Card title="Your delivery driver">
+              <p className="text-lg font-semibold text-ink-900">{o.driver_name}</p>
+              <p className="text-sm text-ink-500">{o.van_name ? `Van ${o.van_name} · ` : ''}on the way with your battery. Share your delivery OTP only when you receive the pack.</p>
+            </Card>
+          )}
+
+          {o.pickup_code && !closed && o.status !== 'AWAITING_APPROVAL' && (
             <div className="rounded-2xl bg-ink-950 p-6 text-white">
               <div className="text-xs uppercase tracking-widest text-ink-400">Pickup code</div>
               <div className="mt-2 font-mono text-4xl font-semibold tracking-[0.3em] text-volt-400">{o.pickup_code}</div>
@@ -68,6 +109,26 @@ export default function OrderDetail() {
               </div>
               {o.delivery_otp && <div className="mt-3 text-sm text-ink-300">Delivery OTP for driver: <b className="font-mono text-white">{o.delivery_otp}</b></div>}
             </div>
+          )}
+
+          {o.payment_due_at && (
+            <Card title="Swap bill">
+              {o.bill_paid_at ? (
+                <p className="text-sm text-volt-700">Bill paid on {dt(o.bill_paid_at)} · {pkr(o.charged_pkr)}{o.bill_penalty_pkr ? ` (includes ${pkr(o.bill_penalty_pkr)} late penalty)` : ''}</p>
+              ) : o.bill_due_pkr != null ? (
+                <div className="space-y-3">
+                  <div className="font-mono text-2xl font-semibold">{pkr(o.bill_due_pkr)}</div>
+                  <p className={cx('text-sm', (o.bill_penalty_pkr ?? 0) > 0 ? 'text-red-600' : 'text-ink-600')}>
+                    {(o.bill_penalty_pkr ?? 0) > 0
+                      ? `Overdue since ${dt(o.payment_due_at)}. Includes a 5% penalty (${pkr(o.bill_penalty_pkr)}).`
+                      : `Pay by ${dt(o.payment_due_at)} to avoid a 5% penalty.${o.actual_total_pkr == null ? ' Amount is final once the swap completes.' : ''}`}
+                  </p>
+                  {billId && <p className="text-sm text-ink-600">Bill ID: <code className="break-all font-mono text-volt-700">{billId}</code></p>}
+                  <Select value={billMethod} onChange={(e) => setBillMethod(e.target.value as PaymentMethod)} options={[{ value: 'RAAST', label: 'Raast' }, { value: 'WALLET', label: 'Mobile wallet' }, { value: 'CARD', label: 'Card' }]} />
+                  <Button onClick={payBill} loading={act.busy}>{billId ? `Pay bill (${pkr(o.bill_due_pkr)})` : 'Get bill ID'}</Button>
+                </div>
+              ) : null}
+            </Card>
           )}
 
           {['PAID', 'PENDING_PAYMENT'].includes(o.status) && o.mode !== 'HOME' && (

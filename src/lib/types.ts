@@ -5,7 +5,7 @@ export type Chemistry = 'LFP' | 'NMC';
 export type BatteryState = 'CHARGED' | 'CHARGING' | 'DEPLETED' | 'RESERVED' | 'IN_USE' | 'ON_VAN' | 'LOCKED' | 'RETIRED';
 export type HealthStatus = 'NORMAL' | 'WARNING' | 'RETIRE';
 export type OrderMode = 'STATION' | 'LOCKER' | 'HOME';
-export type OrderStatus = 'PENDING_PAYMENT' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED' | 'FAILED';
+export type OrderStatus = 'PENDING_PAYMENT' | 'AWAITING_APPROVAL' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED' | 'FAILED';
 export type PaymentMethod = 'RAAST' | 'WALLET' | 'CARD';
 export type PaymentStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'PARTIALLY_REFUNDED' | 'REFUNDED';
 export type AlertType = 'WEAK_PACK' | 'PACK_RETIRED' | 'STOCK_OUT' | 'OVER_TEMP' | 'LOCKOUT' | 'LOW_SUPPLY';
@@ -24,7 +24,7 @@ export const ENUMS = {
   Chemistry: ['LFP', 'NMC'] as Chemistry[],
   BatteryState: ['CHARGED', 'CHARGING', 'DEPLETED', 'RESERVED', 'IN_USE', 'ON_VAN', 'LOCKED', 'RETIRED'] as BatteryState[],
   OrderMode: ['STATION', 'LOCKER', 'HOME'] as OrderMode[],
-  OrderStatus: ['PENDING_PAYMENT', 'PAID', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'] as OrderStatus[],
+  OrderStatus: ['PENDING_PAYMENT', 'AWAITING_APPROVAL', 'PAID', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'] as OrderStatus[],
   PaymentMethod: ['RAAST', 'WALLET', 'CARD'] as PaymentMethod[],
   PaymentStatus: ['PENDING', 'SUCCEEDED', 'FAILED', 'PARTIALLY_REFUNDED', 'REFUNDED'] as PaymentStatus[],
   AlertType: ['WEAK_PACK', 'PACK_RETIRED', 'STOCK_OUT', 'OVER_TEMP', 'LOCKOUT', 'LOW_SUPPLY'] as AlertType[],
@@ -75,10 +75,12 @@ export interface OrderOut {
   settlement_delta_pkr?: number | null; delivery_address?: string | null; delivery_otp?: string | null;
   rating?: number | null; receipt_no?: string | null; hold_expires_at?: string | null;
   created_at: string; completed_at?: string | null;
+  payment_due_at?: string | null; bill_paid_at?: string | null; bill_penalty_pkr?: number; bill_due_pkr?: number | null;
+  van_name?: string | null; driver_name?: string | null;
 }
 export interface OrderCreate {
   station_id?: string | null; latitude?: number | null; longitude?: number | null; mode?: OrderMode;
-  use_subscription?: boolean; capacity_used_ah?: number | null; payment_method?: PaymentMethod | null;
+  use_subscription?: boolean; pay_later?: boolean; capacity_used_ah?: number | null; payment_method?: PaymentMethod | null;
   payment_reference?: string | null; scheduled_time?: string | null; locker_id?: string | null;
   delivery_address?: string | null; delivery_lat?: number | null; delivery_lon?: number | null;
 }
@@ -115,6 +117,7 @@ export interface VanTaskOut {
   order_id?: number | null; latitude?: number | null; longitude?: number | null; address?: string | null;
   drop_count: number; pickup_count: number; priority: number; distance_km: number;
   confirmed_drop?: number | null; confirmed_pickup?: number | null; confirmed_at?: string | null;
+  order_ref?: string | null; customer_name?: string | null; customer_phone?: string | null;
 }
 
 export interface PricingConfig {

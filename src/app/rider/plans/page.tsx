@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { Rider } from '@/lib/endpoints';
+import { Modal } from '@/components/ui';
 
 interface Plan {
   id: string | number;
@@ -11,8 +14,6 @@ interface Plan {
   duration_days: number;
   price_pkr: number;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 const toText = (v: unknown, fallback = ''): string =>
   typeof v === 'string' || typeof v === 'number' ? String(v) : fallback;
@@ -55,25 +56,39 @@ export default function PlansPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let live = true;
 
-    fetch(`${API_URL}/api/plans`, { signal: controller.signal })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Plans request failed (${res.status})`);
-        return res.json();
-      })
-      .then((data) => setPlans(normalizePlans(data)))
+    api<unknown>('/api/plans', { auth: false })
+      .then((data) => { if (live) setPlans(normalizePlans(data)); })
       .catch((err) => {
-        if (err.name === 'AbortError') return;
         console.error('Failed to load plans:', err);
-        setError('Could not load plans right now.');
+        if (live) setError('Could not load plans right now.');
       })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+      .finally(() => { if (live) setLoading(false); });
 
-    return () => controller.abort();
+    return () => { live = false; };
   }, []);
+  const [current, setCurrent] = useState<{ ends_at: string } | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    Rider.subscription().then((s) => setCurrent(s || null)).catch(() => {});
+  }, []);
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      await Rider.cancelSubscription();
+      setCurrent(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not cancel the subscription.');
+    } finally {
+      setCancelling(false);
+      setConfirmOpen(false);
+    }
+  };
+
 const handleSubscribe = (planCode: string) => {
   router.push(`/rider/checkout?plan=${encodeURIComponent(planCode)}`);
 };
@@ -90,11 +105,41 @@ const handleSubscribe = (planCode: string) => {
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Locker Pass Subscriptions</h1>
-          <p className="text-gray-400 mt-2">
-            Lock in your station storage access. Battery swaps are ordered online or paid per swap.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Locker Pass Subscriptions</h1>
+            <p className="text-gray-400 mt-2">
+              Lock in your station storage access. Battery swaps are ordered online or paid per swap.
+            </p>
+          </div>
+          {current && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200 space-y-2">
+              <p>Active subscription until {new Date(current.ends_at).toLocaleDateString('en-PK')}</p>
+              <button
+                onClick={() => setConfirmOpen(true)}
+                className="rounded-lg bg-red-500/90 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-semibold"
+              >
+                Cancel current subscription
+              </button>
+            </div>
+          )}
+          <Modal
+            open={confirmOpen}
+            onClose={() => !cancelling && setConfirmOpen(false)}
+            title="Cancel subscription?"
+            footer={
+              <>
+                <button onClick={() => setConfirmOpen(false)} disabled={cancelling} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50">
+                  Keep it
+                </button>
+                <button onClick={handleCancel} disabled={cancelling} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                  {cancelling ? 'Cancelling...' : 'Yes, cancel'}
+                </button>
+              </>
+            }
+          >
+            <p className="text-sm text-ink-700">Your current subscription will end immediately. No refund is issued.</p>
+          </Modal>
         </div>
 
         {error ? (

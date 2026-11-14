@@ -68,6 +68,10 @@ export function RequireAuth({ roles, loginPath = '/login', children }: { roles?:
   const router = useRouter();
   const pathname = usePathname();
 
+  useEffect(() => {
+    if (user === null) router.replace(`${loginPath}?next=${encodeURIComponent(pathname)}`);
+  }, [user, router, loginPath, pathname]);
+
   if (user === undefined || user === null) {
     return (
       <div className="flex min-h-screen items-center justify-center">

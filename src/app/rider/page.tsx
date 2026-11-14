@@ -24,7 +24,7 @@ export default function RiderHome() {
   const [when, setWhen] = useState('');
   const [result, setResult] = useState<any>(null);
 
-  const active = orders.data?.find((o) => ['PENDING_PAYMENT', 'PAID', 'IN_PROGRESS'].includes(o.status));
+  const active = orders.data?.find((o) => ['PENDING_PAYMENT', 'AWAITING_APPROVAL', 'PAID', 'IN_PROGRESS'].includes(o.status));
   const s = sub.data && typeof sub.data === 'object' ? (sub.data.subscription ?? sub.data) : null;
   const hasSub = s && (s.status || s.swaps_remaining != null);
 

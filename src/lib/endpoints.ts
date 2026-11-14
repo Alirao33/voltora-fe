@@ -28,6 +28,7 @@ export const Users = {
 
 export const Rider = {
   subscription: () => api<any>('/api/rider/subscription'),
+  cancelSubscription: () => api<any>('/api/rider/subscription/cancel', { method: 'POST' }),
   subscribe: (planId: number | string, b: { payment_method: T.PaymentMethod; payment_reference: string }) =>
     api<T.SubscriptionOut>(`/api/rider/plans/${enc(String(planId))}/subscribe`, { method: 'POST', body: b }),
   createOrder: (b: T.OrderCreate) => api<T.OrderOut>('/api/rider/orders', { method: 'POST', body: b }),
@@ -40,6 +41,8 @@ export const Rider = {
   cancel: (id: number | string) => api<T.OrderOut>(`/api/rider/orders/${id}/cancel`, { method: 'POST' }),
   rate: (id: number | string, rating: number, review?: string | null) =>
     api<T.OrderOut>(`/api/rider/orders/${id}/rate`, { method: 'POST', body: { rating, review: review || null } }),
+  payBill: (id: number | string, b: { payment_method: T.PaymentMethod; payment_reference: string }) =>
+    api<T.OrderOut>(`/api/rider/orders/${id}/pay-bill`, { method: 'POST', body: b }),
   receipt: (id: number | string) => api<any>(`/api/rider/orders/${id}/receipt`),
   bookLocker: (b: { site_id: string; locker_id?: string | null; action_type?: T.ActionType; scheduled_time?: string | null }) =>
     api<any>('/api/rider/book-locker', { method: 'POST', body: b }),
@@ -89,6 +92,8 @@ export const Admin = {
   // orders, payments
   orders: (q: { status?: string; station_id?: string; user_id?: number | string; limit?: number }) =>
     api<T.OrderOut[]>('/api/admin/orders', { query: q }),
+  reviewOrder: (id: number, action: 'APPROVE' | 'REJECT', reason?: string) =>
+    api<any>(`/api/admin/orders/${id}/review`, { method: 'POST', body: { action, reason: reason || null } }),
   payments: (q: { status?: string; limit?: number }) => api<T.PaymentOut[]>('/api/admin/payments', { query: q }),
   refund: (id: number, b: { amount_pkr?: number | null; reason?: string }) =>
     api<T.PaymentOut>(`/api/admin/payments/${id}/refund`, { method: 'POST', body: b }),

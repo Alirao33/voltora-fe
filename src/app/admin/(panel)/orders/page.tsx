@@ -23,6 +23,21 @@ function OrdersInner() {
     if (f && data) setOpen(data.find((o) => String(o.id) === f) || null);
   }, [sp, data]);
 
+  const [reviewing, setReviewing] = useState(false);
+  const review = async (action: 'APPROVE' | 'REJECT') => {
+    if (!open) return;
+    setReviewing(true);
+    try {
+      await Admin.reviewOrder(open.id, action);
+      setOpen(null);
+      reload();
+    } catch (e: any) {
+      window.alert(e?.message || 'Could not review the order');
+    } finally {
+      setReviewing(false);
+    }
+  };
+
   const rows = data || [];
   const revenue = rows.filter((o) => o.status === 'COMPLETED').reduce((a, o) => a + (o.charged_pkr || 0), 0);
 
@@ -32,7 +47,7 @@ function OrdersInner() {
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Orders shown" value={rows.length} />
         <Stat label="Completed" value={rows.filter((o) => o.status === 'COMPLETED').length} tone="good" />
-        <Stat label="In flight" value={rows.filter((o) => ['PAID', 'IN_PROGRESS', 'PENDING_PAYMENT'].includes(o.status)).length} tone="warn" />
+        <Stat label="In flight" value={rows.filter((o) => ['PAID', 'IN_PROGRESS', 'PENDING_PAYMENT', 'AWAITING_APPROVAL'].includes(o.status)).length} tone="warn" />
         <Stat label="Charged (completed)" value={pkr(revenue)} />
       </div>
       <Card>
@@ -51,6 +66,18 @@ function OrdersInner() {
         {open && (
           <div className="space-y-5">
             <p className="text-sm text-ink-500">Created {dt(open.created_at)}{open.completed_at && <> · completed {dt(open.completed_at)}</>}</p>
+            {open.driver_name && (
+              <p className="text-sm text-ink-700">Delivery driver: <b>{open.driver_name}</b>{open.van_name ? ` · ${open.van_name}` : ''}</p>
+            )}
+            {open.status === 'AWAITING_APPROVAL' && (
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <span className="text-sm text-amber-900">Home delivery waiting for approval. Approving dispatches the nearest van.</span>
+                <div className="flex gap-2">
+                  <Button variant="danger" loading={reviewing} onClick={() => review('REJECT')}>Reject</Button>
+                  <Button loading={reviewing} onClick={() => review('APPROVE')}>Approve</Button>
+                </div>
+              </div>
+            )}
             <AutoView data={{ ...open, price: undefined }} />
             <div className="rounded-lg border border-ink-100 p-4">
               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">Price breakdown</div>

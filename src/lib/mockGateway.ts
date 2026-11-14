@@ -60,17 +60,17 @@ export async function authorizeOrThrow(opts: Parameters<typeof authorize>[0]): P
 
 /**
  * After a failed attempt, should the checkout get a new reference?
- * Yes for a decline or a 4xx (the server recorded or refused it, nothing was charged).
- * No for network errors, 5xx and 409: the server may have charged, so retrying the same
+ * Yes for a decline or any 4xx (the server refused it; a paid retry comes back 2xx, not 409).
+ * No for network errors and 5xx: the server may have charged, so retrying the same
  * reference returns the original result instead of charging twice.
  */
 export function shouldRotateReference(e: unknown): boolean {
   if (e instanceof PaymentDeclined) return true;
-  return e instanceof ApiError && e.status >= 400 && e.status < 500 && e.status !== 409;
+  return e instanceof ApiError && e.status >= 400 && e.status < 500;
 }
 
 /** Message for an error where the payment may already have gone through. */
 export const maybePaidHint = (e: unknown) =>
-  e instanceof ApiError && (e.status === 0 || e.status === 409 || e.status >= 500)
-    ? " Your payment may already have gone through, so check your orders before paying again. Retrying is safe: you won't be charged twice."
+  e instanceof ApiError && (e.status === 0 || e.status >= 500)
+    ? ". Your payment may already have gone through, so check your orders before paying again. Retrying is safe: you won't be charged twice."
     : '';

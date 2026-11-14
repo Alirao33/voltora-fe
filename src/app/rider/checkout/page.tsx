@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, asList } from '@/lib/api';
 import { Rider } from '@/lib/endpoints';
+import { Modal } from '@/components/ui';
 import type { PaymentMethod } from '@/lib/types';
 import { authorizeOrThrow, maybePaidHint, newPaymentReference, shouldRotateReference } from '@/lib/mockGateway';
 
@@ -27,9 +28,29 @@ function CheckoutForm() {
   const [error, setError] = useState<string | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
   const [method, setMethod] = useState<PaymentMethod>('RAAST');
-  const [decline, setDecline] = useState(false);
   const [lastRef, setLastRef] = useState<string | null>(null);
   const refId = useRef<string | null>(null); // one reference per checkout
+  const [current, setCurrent] = useState<{ ends_at: string } | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    Rider.subscription().then((s) => setCurrent(s || null)).catch(() => {});
+  }, []);
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    setPayError(null);
+    try {
+      await Rider.cancelSubscription();
+      setCurrent(null);
+    } catch (err: any) {
+      setPayError(err?.message || 'Could not cancel the subscription.');
+    } finally {
+      setCancelling(false);
+      setConfirmOpen(false);
+    }
+  };
 
   useEffect(() => {
 
@@ -69,8 +90,13 @@ function CheckoutForm() {
     setPayError(null);
     try {
       refId.current ??= newPaymentReference();
-      setLastRef(refId.current);
-      const auth = await authorizeOrThrow({ reference: refId.current, method, amount_pkr: plan.price_pkr, outcome: decline ? 'decline' : 'approve' });
+      // First click only shows the bill code; the next click starts the subscription.
+      if (!lastRef) {
+        setLastRef(refId.current);
+        setSubmitting(false);
+        return;
+      }
+      const auth = await authorizeOrThrow({ reference: refId.current, method, amount_pkr: plan.price_pkr, outcome: 'approve' });
       await Rider.subscribe(plan.id, { payment_method: method, payment_reference: auth.reference });
       refId.current = null;
       router.push('/rider?status=subscribed');
@@ -137,6 +163,35 @@ function CheckoutForm() {
             <li className="flex items-center gap-2">⚡ Linked directly to your registered rider profile</li>
           </ul>
 
+          {current && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200 flex items-center justify-between gap-3">
+              <span>You have an active subscription until {new Date(current.ends_at).toLocaleDateString('en-PK')}.</span>
+              <button
+                onClick={() => setConfirmOpen(true)}
+                className="shrink-0 rounded-lg bg-red-500/90 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-semibold"
+              >
+                Cancel subscription
+              </button>
+            </div>
+          )}
+          <Modal
+            open={confirmOpen}
+            onClose={() => !cancelling && setConfirmOpen(false)}
+            title="Cancel subscription?"
+            footer={
+              <>
+                <button onClick={() => setConfirmOpen(false)} disabled={cancelling} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50">
+                  Keep it
+                </button>
+                <button onClick={handleCancel} disabled={cancelling} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                  {cancelling ? 'Cancelling...' : 'Yes, cancel'}
+                </button>
+              </>
+            }
+          >
+            <p className="text-sm text-ink-700">Your current subscription will end immediately. No refund is issued.</p>
+          </Modal>
+
           <div className="grid gap-3 sm:grid-cols-2 border-t border-slate-800 pt-4">
             <label className="text-xs text-gray-400 space-y-1">
               <span>Payment method</span>
@@ -146,18 +201,12 @@ function CheckoutForm() {
                 <option value="CARD">Card</option>
               </select>
             </label>
-            <label className="text-xs text-gray-400 space-y-1">
-              <span>Mock gateway outcome (test mode)</span>
-              <select value={decline ? 'decline' : 'approve'} onChange={(e) => setDecline(e.target.value === 'decline')} className="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white">
-                <option value="approve">Approve</option>
-                <option value="decline">Decline</option>
-              </select>
-            </label>
           </div>
 
           {lastRef && (
-            <p className="text-xs text-gray-500">
-              Payment reference: <code className="font-mono text-gray-300 break-all">{lastRef}</code>
+            <p className="text-sm text-gray-400">
+              Bill code: <code className="font-mono text-emerald-300 break-all">{lastRef}</code>
+              <span className="block text-xs text-gray-500 mt-1">Click Activate Pass again to pay and start your subscription.</span>
             </p>
           )}
           {payError && <p className="text-sm text-red-400">{payError}</p>}
