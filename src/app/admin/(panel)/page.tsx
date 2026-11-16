@@ -1,45 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { Modal } from '@/components/ui';
 
 export default function AdminDashboard() {
   const [overview, setOverview] = useState<any>(null);
-  const [finance, setFinance] = useState<any>(null);
   const [riderIdToSuspend, setRiderIdToSuspend] = useState('RIDER-102');
-  const [orderToReview, setOrderToReview] = useState('ORD-20261017-01');
+  const [orderToReview, setOrderToReview] = useState('');
+  const [reviewed, setReviewed] = useState(false); // once an order is reviewed its card leaves the overview
+  const [notice, setNotice] = useState<{ title: string; text: string } | null>(null);
 
   useEffect(() => {
-    // Fetch Admin Overview Analytics
-    fetch('http://127.0.0.1:8000/api/admin/analytics/overview')
-      .then((res) => res.json())
-      .then((data) => setOverview(data))
-      .catch(() => {});
-
-    // Fetch Finance Summary
-    fetch('http://127.0.0.1:8000/api/admin/finance/summary')
-      .then((res) => res.json())
-      .then((data) => setFinance(data))
-      .catch(() => {});
+    api<any>('/api/admin/analytics/overview').then(setOverview).catch(() => {});
   }, []);
 
   const handleUpdateRiderStatus = async (status: string) => {
-    const res = await fetch(`http://127.0.0.1:8000/api/admin/users/${riderIdToSuspend}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, reason: 'Admin Manual Action' }),
-    });
-    const data = await res.json();
-    alert(data.message || 'Status updated.');
+    try {
+      const data = await api<any>(`/api/admin/users/${encodeURIComponent(riderIdToSuspend)}/status`, { method: 'PATCH', body: { status, reason: 'Admin Manual Action' } });
+      setNotice({ title: 'Account updated', text: data?.message || 'Status updated.' });
+    } catch (e: any) {
+      setNotice({ title: 'Could not update account', text: e?.message || 'Something went wrong.' });
+    }
   };
 
   const handleReviewOrder = async (action: string) => {
-    const res = await fetch(`http://127.0.0.1:8000/api/admin/orders/${orderToReview}/review`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, reason: 'Admin Order Audit' }),
-    });
-    const data = await res.json();
-    alert(data.message || 'Order reviewed.');
+    const id = orderToReview.replace(/^ORD-/i, '');
+    try {
+      await api<any>(`/api/admin/orders/${encodeURIComponent(id)}/review`, { method: 'POST', body: { action, reason: 'Admin Order Audit' } });
+      setNotice({ title: 'Order reviewed', text: action === 'APPROVE' ? 'The order was approved.' : 'The order was rejected.' });
+      setReviewed(true);
+    } catch (e: any) {
+      setNotice({ title: 'Could not review order', text: e?.message || 'Something went wrong.' });
+    }
   };
 
   return (
@@ -53,19 +46,19 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
           <p className="text-xs text-slate-400 uppercase font-semibold">Active Riders</p>
-          <p className="text-2xl font-bold text-white mt-2">{overview?.active_riders ?? 1280}</p>
+          <p className="text-2xl font-bold text-white mt-2">{overview?.active_riders ?? '—'}</p>
         </div>
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
           <p className="text-xs text-slate-400 uppercase font-semibold">Orders Today</p>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">{overview?.orders_today ?? 142}</p>
+          <p className="text-2xl font-bold text-emerald-400 mt-2">{overview?.orders_today ?? '—'}</p>
         </div>
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
           <p className="text-xs text-slate-400 uppercase font-semibold">Operational Stations</p>
-          <p className="text-2xl font-bold text-white mt-2">{overview?.operational_stations ?? 12}</p>
+          <p className="text-2xl font-bold text-white mt-2">{overview?.operational_stations ?? '—'}</p>
         </div>
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
           <p className="text-xs text-slate-400 uppercase font-semibold">Net Revenue (PKR)</p>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">Rs. {finance?.net_revenue?.toLocaleString() ?? '515,000'}</p>
+          <p className="text-2xl font-bold text-emerald-400 mt-2">Rs. {overview?.net_revenue_pkr?.toLocaleString('en-PK') ?? '—'}</p>
         </div>
       </div>
 
@@ -102,7 +95,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Order Review Controls */}
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+        {!reviewed && <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
           <h2 className="text-xl font-bold">Online Order Review</h2>
           <div className="space-y-3">
             <div>
@@ -129,8 +122,11 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </div>}
       </div>
+      <Modal open={!!notice} onClose={() => setNotice(null)} title={notice?.title} footer={<button onClick={() => setNotice(null)} className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950">OK</button>}>
+        <p className="text-sm text-ink-700">{notice?.text}</p>
+      </Modal>
     </div>
   );
 }

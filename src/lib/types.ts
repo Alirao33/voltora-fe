@@ -39,7 +39,7 @@ export const ENUMS = {
 export interface Token { access_token: string; refresh_token?: string | null; token_type?: string }
 
 export interface UserOut {
-  id: number; username?: string | null; phone?: string | null; full_name?: string | null;
+  id: number; username?: string | null; email?: string | null; phone?: string | null; full_name?: string | null;
   role: Role; is_active: boolean; is_admin: boolean; is_vip: boolean; points: number;
 }
 export interface UserAdminUpdate { role?: Role | null; is_vip?: boolean | null; full_name?: string | null; phone?: string | null }
@@ -76,7 +76,7 @@ export interface OrderOut {
   rating?: number | null; receipt_no?: string | null; hold_expires_at?: string | null;
   created_at: string; completed_at?: string | null;
   payment_due_at?: string | null; bill_paid_at?: string | null; bill_penalty_pkr?: number; bill_due_pkr?: number | null;
-  van_name?: string | null; driver_name?: string | null;
+  van_name?: string | null; driver_name?: string | null; driver_phone?: string | null; locker_code_requested?: boolean; locker_code_shared?: boolean;
 }
 export interface OrderCreate {
   station_id?: string | null; latitude?: number | null; longitude?: number | null; mode?: OrderMode;
@@ -117,7 +117,8 @@ export interface VanTaskOut {
   order_id?: number | null; latitude?: number | null; longitude?: number | null; address?: string | null;
   drop_count: number; pickup_count: number; priority: number; distance_km: number;
   confirmed_drop?: number | null; confirmed_pickup?: number | null; confirmed_at?: string | null;
-  order_ref?: string | null; customer_name?: string | null; customer_phone?: string | null;
+  order_ref?: string | null; customer_name?: string | null; customer_phone?: string | null; order_total_pkr?: number | null; delivery_charge_pkr?: number | null; delivery_km?: number | null; payment_note?: string | null; station_label?: string | null;
+  locker_code_state?: 'NONE' | 'REQUESTED' | 'SHARED'; locker_code?: string | null;
 }
 
 export interface PricingConfig {
@@ -126,6 +127,7 @@ export interface PricingConfig {
   peak_hours_pkt: [number, number][]; scarcity_threshold: number; scarcity_uplift: number;
   max_demand_factor: number; thermal_adjustment_enabled: boolean; green_rebate_max_c: number;
   green_rebate_pct: number; standard_max_c: number; thermal_penalty_pct: number;
+  soc_rate_pkr_per_pct: number; same_soh_discount_pct: number; delivery_rate_pkr_per_km: number; penalty_temp_pkr_per_pt: number; penalty_cycle_pkr_per_pt: number; penalty_fault_pkr_per_pt: number;
 }
 
 export interface StationCreate {
@@ -145,6 +147,7 @@ export interface LockerUpdate { status?: LockerStatus | null; max_battery_capaci
 export interface QuoteRequest {
   site_id?: string | null; latitude?: number | null; longitude?: number | null; pack_id?: string | null;
   voltage?: number | null; capacity_used_ah: number; chemistry?: Chemistry; temperature_c?: number | null; delivery?: boolean;
+  soc_used_pct?: number | null; soh_pct?: number | null;
 }
 export interface GuestSwapRequest extends QuoteRequest {
   guest_name?: string | null; phone?: string | null; payment_method: PaymentMethod; payment_reference: string;

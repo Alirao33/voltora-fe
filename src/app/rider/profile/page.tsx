@@ -10,6 +10,7 @@ export default function Profile() {
   const rows: [string, React.ReactNode][] = [
     ['Name', user.full_name || '—'],
     ['Username', user.username || '—'],
+    ['Email', user.email || '—'],
     ['Phone', user.phone || '—'],
     ['Role', <Badge key="r" value={user.role} />],
     ['Account', <Badge key="a" value={user.is_active ? 'ACTIVE' : 'DISABLED'} />],

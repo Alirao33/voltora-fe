@@ -1,5 +1,6 @@
 'use client';
 
+import { perPeriod } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
@@ -96,14 +97,14 @@ const handleSubscribe = (planCode: string) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-8">
+      <div className="min-h-screen bg-night text-white flex items-center justify-center p-8">
         <p className="text-gray-400">Loading locker pass plans...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
+    <div className="min-h-screen bg-night text-white p-6 md:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -162,7 +163,7 @@ const handleSubscribe = (planCode: string) => {
                     <span className="text-4xl font-extrabold text-white">
                       Rs {plan.price_pkr.toLocaleString('en-PK')}
                     </span>
-                    <span className="text-sm text-gray-400">/ {plan.duration_days} days</span>
+                    <span className="text-sm text-gray-400">{perPeriod(plan.duration_days)}</span>
                   </div>
                   <ul className="space-y-3 text-sm text-gray-300 pt-4 border-t border-slate-800">
                     <li className="flex items-center gap-2">

@@ -1,6 +1,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Auth } from '@/lib/endpoints';
@@ -102,6 +103,7 @@ function AdminLoginInner() {
           </button>
         </form>
       )}
+      <Link href="/login" className="mt-6 inline-block text-sm font-medium text-ink-600 hover:text-ink-900">← Back to rider sign in</Link>
     </AuthLayout>
   );
 }

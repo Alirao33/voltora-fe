@@ -112,7 +112,7 @@ export default function Fleet() {
         {vanForm && (
           <div className="grid gap-4 sm:grid-cols-2">
             {!vanForm.id && <Field label="Name" className="sm:col-span-2"><Input value={vanForm.name} onChange={(e) => setVanForm({ ...vanForm, name: e.target.value })} maxLength={60} /></Field>}
-            <Field label="Driver" hint={drivers.data?.length ? undefined : 'Promote a user to Driver under Users first'}>
+            <Field label="Delivery man" hint={drivers.data?.length ? undefined : 'Promote a user to Driver under Users first'}>
               <Select value={String(vanForm.driver_id)} onChange={(e) => setVanForm({ ...vanForm, driver_id: e.target.value })} placeholder="Unassigned"
                 options={(drivers.data || []).map((d) => ({ value: String(d.id), label: d.full_name || d.username || d.phone || `#${d.id}` }))} />
             </Field>

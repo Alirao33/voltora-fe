@@ -79,7 +79,7 @@ export function Checkbox({ label, ...p }: React.InputHTMLAttributes<HTMLInputEle
 /* ---------- Layout bits ---------- */
 export function Card({ title, actions, children, className, bodyClass, subtitle }: { title?: ReactNode; subtitle?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; bodyClass?: string }) {
   return (
-    <section className={cx('min-w-0 rounded-xl border border-ink-200 bg-white shadow-card', className)}>
+    <section className={cx('min-w-0 rounded-xl border border-white/70 bg-white/85 shadow-card backdrop-blur-sm', className)}>
       {(title || actions) && (
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-3.5">
           <div>
@@ -98,6 +98,7 @@ export function PageHeader({ title, desc, actions }: { title: ReactNode; desc?: 
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
+        <span className="mb-2 block h-1 w-10 rounded-full bg-gradient-to-r from-volt-500 to-sky-400" />
         <h1 className="text-2xl font-semibold tracking-tight text-ink-950">{title}</h1>
         {desc && <p className="mt-1 text-sm text-ink-500">{desc}</p>}
       </div>
@@ -108,7 +109,7 @@ export function PageHeader({ title, desc, actions }: { title: ReactNode; desc?: 
 
 export function Stat({ label, value, sub, tone }: { label: ReactNode; value: ReactNode; sub?: ReactNode; tone?: 'good' | 'warn' | 'bad' }) {
   return (
-    <div className="rounded-xl border border-ink-200 bg-white p-4 shadow-card">
+    <div className="rounded-xl border border-white/70 bg-white/85 p-4 shadow-card backdrop-blur-sm">
       <div className="text-xs font-medium uppercase tracking-wide text-ink-500">{label}</div>
       <div
         className={cx(

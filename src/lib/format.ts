@@ -71,3 +71,11 @@ export function saveBlob(blob: Blob, filename: string) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/** "per month", "per 6 months", "per year" for a pass length in days (falls back to "per N days"). */
+export function perPeriod(days: number): string {
+  if (days === 30) return 'per month';
+  if (days === 180) return 'per 6 months';
+  if (days === 365) return 'per year';
+  return `per ${days} days`;
+}

@@ -1,13 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Rider } from '@/lib/endpoints';
 import { useAction, useApi } from '@/lib/hooks';
 import { cx, dt, pkr } from '@/lib/format';
 import type { PaymentMethod } from '@/lib/types';
 import { authorizeOrThrow, maybePaidHint, newPaymentReference, shouldRotateReference } from '@/lib/mockGateway';
 import { AutoView, RawJson } from '@/components/AutoView';
+import { OrderChat } from '@/components/OrderChat';
 import { Badge, Button, Card, ErrorBox, Field, Input, Loading, Modal, Mono, Select, Textarea } from '@/components/ui';
 
 const FLOW = ['PENDING_PAYMENT', 'PAID', 'IN_PROGRESS', 'COMPLETED'];
@@ -23,9 +24,20 @@ export default function OrderDetail() {
   const [review, setReview] = useState('');
   const [receipt, setReceipt] = useState<any>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [hideAsk, setHideAsk] = useState(false);
   const [billMethod, setBillMethod] = useState<PaymentMethod>('RAAST');
   const billRef = useRef<string | null>(null);
   const [billId, setBillId] = useState<string | null>(null);
+
+  // Home deliveries: refresh quietly so the delivery man's name, chat and code requests show up without a reload.
+  const live = o?.mode === 'HOME' && !['COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'].includes(o.status);
+  useEffect(() => {
+    if (!live) return;
+    const t = setInterval(() => { Rider.order(id).then((r) => setData(r)).catch(() => {}); }, 5000);
+    return () => clearInterval(t);
+  }, [live, id, setData]);
+
+  useEffect(() => { if (!o?.locker_code_requested) setHideAsk(false); }, [o?.locker_code_requested]);
 
   // First click shows the bill ID, second click pays it (same flow as the plan checkout).
   const payBill = async () => {
@@ -93,21 +105,27 @@ export default function OrderDetail() {
           )}
 
           {o.mode === 'HOME' && o.driver_name && !['CANCELLED', 'EXPIRED', 'FAILED'].includes(o.status) && (
-            <Card title="Your delivery driver">
-              <p className="text-lg font-semibold text-ink-900">{o.driver_name}</p>
-              <p className="text-sm text-ink-500">{o.van_name ? `Van ${o.van_name} · ` : ''}on the way with your battery. Share your delivery OTP only when you receive the pack.</p>
-            </Card>
+            <>
+              <Card title="Your delivery man">
+                <p className="text-lg font-semibold text-ink-900">{o.driver_name}</p>
+                <p className="text-sm text-ink-500">{o.van_name ? `Van ${o.van_name} · ` : ''}on the way with your battery. Message them below, and share your delivery OTP only when you receive the pack.</p>
+              </Card>
+              <Card title={`Chat with ${o.driver_name}`}>
+                <OrderChat orderId={o.id} side="RIDER" />
+              </Card>
+            </>
           )}
 
           {o.pickup_code && !closed && o.status !== 'AWAITING_APPROVAL' && (
             <div className="rounded-2xl bg-ink-950 p-6 text-white">
-              <div className="text-xs uppercase tracking-widest text-ink-400">Pickup code</div>
+              <div className="text-xs uppercase tracking-widest text-ink-400">{o.mode === 'HOME' ? 'Locker code · only you can see this' : 'Pickup code'}</div>
               <div className="mt-2 font-mono text-4xl font-semibold tracking-[0.3em] text-volt-400">{o.pickup_code}</div>
               <div className="mt-3 text-sm text-ink-300">
                 {o.slot_id && <>Slot <b className="font-mono">{o.slot_id}</b> · </>}
                 {o.hold_expires_at && <>held until {dt(o.hold_expires_at)}</>}
               </div>
-              {o.delivery_otp && <div className="mt-3 text-sm text-ink-300">Delivery OTP for driver: <b className="font-mono text-white">{o.delivery_otp}</b></div>}
+              {o.mode === 'HOME' && <div className="mt-3 text-sm text-ink-300">{o.locker_code_shared ? 'The delivery man can see this code.' : 'The delivery man cannot see this code unless you allow it.'}</div>}
+              {o.delivery_otp && <div className="mt-3 text-sm text-ink-300">Delivery OTP for the delivery man: <b className="font-mono text-white">{o.delivery_otp}</b></div>}
             </div>
           )}
 
@@ -193,6 +211,15 @@ export default function OrderDetail() {
           </div>
         </Card>
       </div>
+
+      <Modal open={!!o.locker_code_requested && !hideAsk} onClose={() => setHideAsk(true)} title="Allow the delivery man to see your locker code?" footer={
+        <>
+          <Button variant="ghost" loading={act.busy} onClick={async () => { update(await act.run(() => Rider.respondLockerCode(o.id, false))); }}>Not now</Button>
+          <Button loading={act.busy} onClick={async () => { await act.run(() => Rider.respondLockerCode(o.id, true), 'Locker code shared'); Rider.order(id).then((r) => setData(r)).catch(() => {}); }}>Allow</Button>
+        </>
+      }>
+        <p className="text-sm text-ink-600"><b>{o.driver_name}</b> is asking for the code that opens your locker. Only allow this when the delivery man is with you. Your delivery OTP stays private either way.</p>
+      </Modal>
 
       <Modal open={confirmCancel} onClose={() => setConfirmCancel(false)} title="Cancel this order?" footer={
         <>

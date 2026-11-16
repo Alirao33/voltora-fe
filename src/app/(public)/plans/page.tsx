@@ -1,4 +1,5 @@
 'use client';
+import { perPeriod } from '@/lib/format';
 import { getTokens } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -76,7 +77,7 @@ export default function PublicPlansPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-8">
+      <div className="min-h-screen bg-night text-white flex items-center justify-center p-8">
         <p className="text-gray-400">Loading subscription plans...</p>
       </div>
     );
@@ -84,7 +85,7 @@ export default function PublicPlansPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-8 space-y-4 text-center">
+      <div className="min-h-screen bg-night text-white flex flex-col items-center justify-center p-8 space-y-4 text-center">
         <p className="text-red-400">{error}</p>
         <button
           onClick={() => window.location.reload()}
@@ -97,7 +98,7 @@ export default function PublicPlansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
+    <div className="min-h-screen bg-night text-white p-6 md:p-12">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <h1 className="text-4xl font-extrabold tracking-tight">Voltora Locker Passes</h1>
@@ -121,7 +122,7 @@ export default function PublicPlansPage() {
                   <span className="text-3xl font-extrabold text-white">
                     Rs {plan.price_pkr.toLocaleString('en-PK')}
                   </span>
-                  <span className="text-xs text-gray-400">/ {plan.duration_days} days</span>
+                  <span className="text-xs text-gray-400">{perPeriod(plan.duration_days)}</span>
                 </div>
                 {plan.description && (
                   <p className="text-sm text-gray-400">{plan.description}</p>

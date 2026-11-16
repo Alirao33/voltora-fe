@@ -37,11 +37,11 @@ export default function MyOrders() {
       />
 
       {/* OTP Delivery Verification Banner */}
-      <div className="border border-emerald-500/30 bg-emerald-950/20 rounded-2xl p-5 flex justify-between items-center text-white">
+      <div className="border border-emerald-500/40 bg-ink-950 rounded-2xl p-5 flex justify-between items-center text-white">
         <div>
           <span className="text-xs font-bold uppercase text-emerald-400 tracking-wider">Active Delivery Dispatch</span>
           <h3 className="text-lg font-bold mt-1">Order #ORD-20261017-01 (In Progress)</h3>
-          <p className="text-xs text-slate-400 mt-1">Driver assigned: Tariq Mahmood (Van KHI-01) • Delivery OTP: <span className="text-emerald-400 font-mono font-bold text-base bg-slate-900 px-2 py-0.5 rounded">4829</span></p>
+          <p className="text-xs text-slate-400 mt-1">Delivery man assigned: Tariq Mahmood (Van KHI-01) • Delivery OTP: <span className="text-emerald-400 font-mono font-bold text-base bg-slate-900 px-2 py-0.5 rounded">4829</span></p>
         </div>
         <span className="bg-emerald-500/20 text-emerald-400 font-bold px-3 py-1 rounded-full text-xs">READY FOR DISPATCH</span>
       </div>
@@ -62,13 +62,13 @@ export default function MyOrders() {
         {loading ? (
           <Loading />
         ) : (
-          <div className="p-4 text-slate-300 text-sm">
-            <p className="text-slate-400">Past Orders & Swaps</p>
-            <div className="mt-3 divide-y divide-slate-800">
+          <div className="p-4 text-ink-700 text-sm">
+            <p className="text-ink-500">Past Orders & Swaps</p>
+            <div className="mt-3 divide-y divide-ink-100">
               <div className="py-3 flex justify-between items-center">
                 <div>
-                  <p className="font-semibold text-white">Station Swap - STN-KHI-001</p>
-                  <p className="text-xs text-slate-400">17 Oct 2026, 14:20 PM • Covered by Subscription</p>
+                  <p className="font-semibold text-ink-900">Station Swap - STN-KHI-001</p>
+                  <p className="text-xs text-ink-500">17 Oct 2026, 14:20 PM • Covered by Subscription</p>
                 </div>
                 <span className="text-emerald-400 text-xs font-bold">COMPLETED</span>
               </div>

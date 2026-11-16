@@ -1,5 +1,6 @@
 'use client';
 
+import { perPeriod } from '@/lib/format';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -66,7 +67,7 @@ export default function PublicLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-night text-white selection:bg-emerald-500 selection:text-slate-950">
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 py-20 text-center space-y-6">
         <span className="inline-block px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-semibold tracking-wider uppercase">
@@ -118,7 +119,7 @@ export default function PublicLandingPage() {
                   <h3 className="text-xl font-bold">{plan.name}</h3>
                   <div className="text-2xl font-extrabold text-white">
                     Rs {plan.price_pkr.toLocaleString('en-PK')}
-                    <span className="text-xs font-normal text-gray-400"> / {plan.duration_days} days</span>
+                    <span className="text-xs font-normal text-gray-400"> {perPeriod(plan.duration_days)}</span>
                   </div>
                 </div>
 

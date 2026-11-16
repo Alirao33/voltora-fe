@@ -1,5 +1,6 @@
 'use client';
 
+import { perPeriod } from '@/lib/format';
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, asList } from '@/lib/api';
@@ -99,7 +100,7 @@ function CheckoutForm() {
       const auth = await authorizeOrThrow({ reference: refId.current, method, amount_pkr: plan.price_pkr, outcome: 'approve' });
       await Rider.subscribe(plan.id, { payment_method: method, payment_reference: auth.reference });
       refId.current = null;
-      router.push('/rider?status=subscribed');
+      router.push('/rider/bookings'); // next step: pick a station for the locker
     } catch (err: any) {
       if (shouldRotateReference(err)) refId.current = null;
       setPayError((err?.message || 'Payment processing failed. Try again.') + maybePaidHint(err));
@@ -110,7 +111,7 @@ function CheckoutForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-8">
+      <div className="min-h-screen bg-night text-white flex items-center justify-center p-8">
         <p className="text-gray-400">Loading subscription summary...</p>
       </div>
     );
@@ -118,7 +119,7 @@ function CheckoutForm() {
 
   if (error || !plan) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-8 space-y-4 text-center">
+      <div className="min-h-screen bg-night text-white flex flex-col items-center justify-center p-8 space-y-4 text-center">
         <p className="text-red-400">{error || 'Invalid subscription request.'}</p>
         <button
           onClick={() => router.push('/rider/plans')}
@@ -131,7 +132,7 @@ function CheckoutForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
+    <div className="min-h-screen bg-night text-white p-6 md:p-12">
       <div className="max-w-xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Confirm Subscription</h1>
@@ -153,7 +154,7 @@ function CheckoutForm() {
               <span className="text-2xl font-extrabold text-white">
                 Rs {plan.price_pkr.toLocaleString('en-PK')}
               </span>
-              <p className="text-xs text-gray-400">/ {plan.duration_days} days</p>
+              <p className="text-xs text-gray-400">{perPeriod(plan.duration_days)}</p>
             </div>
           </div>
 
@@ -209,7 +210,9 @@ function CheckoutForm() {
               <span className="block text-xs text-gray-500 mt-1">Click Activate Pass again to pay and start your subscription.</span>
             </p>
           )}
-          {payError && <p className="text-sm text-red-400">{payError}</p>}
+          <Modal open={!!payError && !confirmOpen} onClose={() => setPayError(null)} title="Payment not completed" footer={<button onClick={() => setPayError(null)} className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950">OK</button>}>
+            <p className="text-sm text-ink-700">{payError}</p>
+          </Modal>
 
           <button
             onClick={handleConfirmSubscription}
@@ -228,7 +231,7 @@ function CheckoutForm() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-night text-white p-8 text-center">Loading...</div>}>
       <CheckoutForm />
     </Suspense>
   );

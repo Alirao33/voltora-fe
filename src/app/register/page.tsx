@@ -7,7 +7,7 @@ import { ApiError } from '@/lib/api';
 import { Auth } from '@/lib/endpoints';
 import { useAuth } from '@/components/AuthProvider';
 
-type FieldName = 'full_name' | 'email' | 'phone' | 'password';
+type FieldName = 'full_name' | 'username' | 'email' | 'phone' | 'password';
 
 // Mirrors UserCreate.validate_password_complexity in backend/schemas/auth.py.
 const PASSWORD_RULES: { label: string; test: (v: string) => boolean }[] = [
@@ -24,6 +24,9 @@ const PHONE_RE = /^(\+92|0)3\d{9}$/;
 function validate(f: Record<FieldName, string>): Partial<Record<FieldName, string>> {
   const e: Partial<Record<FieldName, string>> = {};
   if (f.full_name.trim().length > 120) e.full_name = 'Full name must be 120 characters or fewer';
+  const uname = f.username.trim();
+  if (uname.length < 3 || uname.length > 64) e.username = 'Username must be 3 to 64 characters';
+  else if (uname.includes('@') || /\s/.test(uname)) e.username = 'Username cannot contain spaces or @ (your email goes in the email field)';
   const email = f.email.trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email address';
   else if (email.length > 64) e.email = 'Email must be 64 characters or fewer';
@@ -33,7 +36,7 @@ function validate(f: Record<FieldName, string>): Partial<Record<FieldName, strin
   return e;
 }
 
-const SERVER_FIELD: Record<string, FieldName> = { username: 'email', password: 'password', phone: 'phone', full_name: 'full_name' };
+const SERVER_FIELD: Record<string, FieldName> = { username: 'username', email: 'email', password: 'password', phone: 'phone', full_name: 'full_name' };
 
 /** Turns a FastAPI error into per-field messages plus anything that isn't tied to a field. */
 function serverErrors(err: unknown): { fields: Partial<Record<FieldName, string>>; general: string[] } {
@@ -50,7 +53,8 @@ function serverErrors(err: unknown): { fields: Partial<Record<FieldName, string>
   } else {
     const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
     // 409s from /register name the field in plain words.
-    if (/^Username /.test(msg)) fields.email = 'An account with this email already exists. Sign in instead.';
+    if (/^Username /.test(msg)) fields.username = 'This username is taken. Choose another.';
+    else if (/^Email /.test(msg)) fields.email = 'An account with this email already exists. Sign in instead.';
     else if (/^Phone /.test(msg)) fields.phone = 'This phone number is already registered.';
     else general.push(msg);
   }
@@ -62,14 +66,15 @@ function RegisterForm() {
   const selectedPlan = useSearchParams().get('plan');
   const { signIn } = useAuth();
 
-  const [formData, setFormData] = useState<Record<FieldName, string>>({ full_name: '', email: '', phone: '', password: '' });
+  const [formData, setFormData] = useState<Record<FieldName, string>>({ full_name: '', username: '', email: '', phone: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [generalErrors, setGeneralErrors] = useState<string[]>([]);
 
   const fields: { name: FieldName; label: string; type: string; placeholder: string; required: boolean; autoComplete: string }[] = [
     { name: 'full_name', label: 'Full Name', type: 'text', placeholder: 'John Doe', required: false, autoComplete: 'name' },
-    { name: 'email', label: 'Email address (you sign in with this)', type: 'email', placeholder: 'rider@example.com', required: true, autoComplete: 'email' },
+    { name: 'username', label: 'Username (you sign in with this)', type: 'text', placeholder: 'johndoe', required: true, autoComplete: 'username' },
+    { name: 'email', label: 'Email address', type: 'email', placeholder: 'rider@example.com', required: true, autoComplete: 'email' },
     { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '0300 1234567', required: false, autoComplete: 'tel' },
     { name: 'password', label: 'Password', type: 'password', placeholder: '••••••••', required: true, autoComplete: 'new-password' },
   ];
@@ -89,9 +94,8 @@ function RegisterForm() {
 
     setLoading(true);
     try {
-      // The backend has no email field: the email is the username.
-      const username = formData.email.trim().toLowerCase();
-      await Auth.register({ username, password: formData.password, phone: formData.phone.trim() || null, full_name: formData.full_name.trim() || null });
+      const username = formData.username.trim();
+      await Auth.register({ username, email: formData.email.trim().toLowerCase(), password: formData.password, phone: formData.phone.trim() || null, full_name: formData.full_name.trim() || null });
       await signIn(await Auth.login(username, formData.password));
       router.push(selectedPlan ? `/rider/checkout?plan=${encodeURIComponent(selectedPlan)}` : '/rider/plans');
     } catch (err) {
@@ -110,7 +114,7 @@ function RegisterForm() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-night text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
         <Link href="/" className="inline-flex items-center gap-2 text-emerald-400 font-bold text-2xl">⚡ Voltora</Link>
         <h2 className="text-3xl font-extrabold tracking-tight">Create your Rider Account</h2>
@@ -186,7 +190,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-night text-white p-8 text-center">Loading...</div>}>
       <RegisterForm />
     </Suspense>
   );

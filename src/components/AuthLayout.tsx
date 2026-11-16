@@ -13,9 +13,10 @@ export function AuthLayout({ title, subtitle, children, side }: { title: string;
           </div>
         </div>
       </div>
-      <div className="relative hidden overflow-hidden bg-ink-950 lg:block">
+      <div className="relative hidden overflow-hidden bg-night lg:block">
         <div className="grid-bg absolute inset-0" />
         <div className="absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-volt-500/25 blur-3xl" />
+        <div className="absolute -left-32 top-10 h-[24rem] w-[24rem] rounded-full bg-indigo-500/20 blur-3xl" />
         <div className="relative flex h-full flex-col justify-end p-12 text-white">
           {side ?? (
             <>

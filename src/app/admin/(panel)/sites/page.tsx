@@ -6,6 +6,7 @@ import { useAction, useApi } from '@/lib/hooks';
 import { ENUMS, type DoorLockState, type LockerStatus } from '@/lib/types';
 import { num, toNum } from '@/lib/format';
 import { isSuperAdmin, useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/Toast';
 import { AutoView, fmtValue } from '@/components/AutoView';
 import { Badge, Button, Card, Checkbox, DataTable, ErrorBox, Field, Input, Loading, Modal, Mono, PageHeader, Select, Tabs, Toolbar } from '@/components/ui';
 
@@ -21,6 +22,7 @@ export default function SitesPage() {
   const [withLockers, setWithLockers] = useState(true);
   const occ = useApi(() => Admin.occupancy({ occupancy_status: occStatus as any, include_lockers: withLockers }), [occStatus, withLockers], { skip: tab !== 'occupancy' });
   const act = useAction();
+  const toast = useToast();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [site, setSite] = useState({ ...blankSite });
@@ -33,6 +35,7 @@ export default function SitesPage() {
   const list = asList(sites.data);
 
   const createSite = async () => {
+    if (Number(site.total_lockers) < 10) { toast.error('A station needs at least 10 lockers.'); return; }
     const r = await act.run(() => Admin.createSite({
       id: site.id || null, name: site.name, latitude: Number(site.latitude), longitude: Number(site.longitude), address: site.address,
       total_lockers: Number(site.total_lockers), host_name: site.host_name || null, host_revenue_share_pct: Number(site.host_revenue_share_pct) || 0, is_depot: site.is_depot,
@@ -41,6 +44,7 @@ export default function SitesPage() {
   };
 
   const saveSite = async () => {
+    if (edit.total_lockers !== '' && Number(edit.total_lockers) < 10) { toast.error('A station needs at least 10 lockers.'); return; }
     const r = await act.run(() => Admin.updateSite(edit._id, {
       name: edit.name || null, address: edit.address || null, total_lockers: toNum(edit.total_lockers), host_name: edit.host_name || null,
       host_revenue_share_pct: toNum(edit.host_revenue_share_pct), target_stock: toNum(edit.target_stock), is_active: edit.is_active,
@@ -163,7 +167,7 @@ export default function SitesPage() {
           <Field label="Address" className="sm:col-span-2"><Input value={site.address} onChange={(e) => setSite({ ...site, address: e.target.value })} maxLength={300} /></Field>
           <Field label="Latitude"><Input type="number" step="any" value={site.latitude} onChange={(e) => setSite({ ...site, latitude: e.target.value })} /></Field>
           <Field label="Longitude"><Input type="number" step="any" value={site.longitude} onChange={(e) => setSite({ ...site, longitude: e.target.value })} /></Field>
-          <Field label="Total lockers"><Input type="number" min={0} max={500} value={site.total_lockers} onChange={(e) => setSite({ ...site, total_lockers: e.target.value })} /></Field>
+          <Field label="Total lockers"><Input type="number" min={10} max={500} value={site.total_lockers} onChange={(e) => setSite({ ...site, total_lockers: e.target.value })} /></Field>
           <Field label="Host name"><Input value={site.host_name} onChange={(e) => setSite({ ...site, host_name: e.target.value })} /></Field>
           <Field label="Host revenue share (%)"><Input type="number" min={0} max={100} value={site.host_revenue_share_pct} onChange={(e) => setSite({ ...site, host_revenue_share_pct: e.target.value })} /></Field>
           <div className="flex items-end pb-2"><Checkbox label="This is a depot" checked={site.is_depot} onChange={(e) => setSite({ ...site, is_depot: e.target.checked })} /></div>
@@ -176,7 +180,7 @@ export default function SitesPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Name"><Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></Field>
             <Field label="Address"><Input value={edit.address} onChange={(e) => setEdit({ ...edit, address: e.target.value })} /></Field>
-            <Field label="Total lockers"><Input type="number" value={edit.total_lockers} onChange={(e) => setEdit({ ...edit, total_lockers: e.target.value })} /></Field>
+            <Field label="Total lockers" hint="Minimum 10"><Input type="number" min={10} value={edit.total_lockers} onChange={(e) => setEdit({ ...edit, total_lockers: e.target.value })} /></Field>
             <Field label="Target stock" hint="Charged packs to keep on site (overrides forecast)"><Input type="number" value={edit.target_stock} onChange={(e) => setEdit({ ...edit, target_stock: e.target.value })} /></Field>
             <Field label="Host name"><Input value={edit.host_name} onChange={(e) => setEdit({ ...edit, host_name: e.target.value })} /></Field>
             <Field label="Host revenue share (%)"><Input type="number" value={edit.host_revenue_share_pct} onChange={(e) => setEdit({ ...edit, host_revenue_share_pct: e.target.value })} /></Field>

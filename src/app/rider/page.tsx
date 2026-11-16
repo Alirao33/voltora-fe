@@ -1,48 +1,21 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Rider } from '@/lib/endpoints';
-import { useAction, useApi, useRecentBookings } from '@/lib/hooks';
-import { dt, getPosition, localToIso } from '@/lib/format';
+import { useApi } from '@/lib/hooks';
+import { dt } from '@/lib/format';
 import { useAuth } from '@/components/AuthProvider';
-import { AutoView, RawJson } from '@/components/AutoView';
 import { OrdersTable } from '@/components/OrdersTable';
-import { Badge, Button, Card, Checkbox, ErrorBox, Field, Input, Loading, Stat } from '@/components/ui';
-import { useToast } from '@/components/Toast';
+import { Badge, Card, ErrorBox, Loading, Stat } from '@/components/ui';
 
 export default function RiderHome() {
   const { user } = useAuth();
   const router = useRouter();
-  const toast = useToast();
-  const sub = useApi(() => Rider.subscription(), []);
+  const pass = useApi(() => Rider.lockerPass(), []);
   const orders = useApi(() => Rider.orders(5), []);
-  const { add } = useRecentBookings();
-  const smart = useAction();
-  const [maxKm, setMaxKm] = useState(10);
-  const [autoBook, setAutoBook] = useState(true);
-  const [when, setWhen] = useState('');
-  const [result, setResult] = useState<any>(null);
 
   const active = orders.data?.find((o) => ['PENDING_PAYMENT', 'AWAITING_APPROVAL', 'PAID', 'IN_PROGRESS'].includes(o.status));
-  const s = sub.data && typeof sub.data === 'object' ? (sub.data.subscription ?? sub.data) : null;
-  const hasSub = s && (s.status || s.swaps_remaining != null);
-
-  const doSmartSwap = async () => {
-    let pos;
-    try { pos = await getPosition(); } catch (e: any) { return toast.error(e.message); }
-    const r = await smart.run(
-      () => Rider.smartSwap({ latitude: pos.lat, longitude: pos.lon, max_distance_km: maxKm, auto_book: autoBook, scheduled_time: localToIso(when) }),
-      'Smart Swap found a locker for you',
-    );
-    if (r) {
-      setResult(r);
-      const bid = r.booking_id ?? r.booking?.booking_id ?? r.booking?.id;
-      if (bid) add(String(bid));
-    }
-  };
-
-  const bookingId = result && (result.booking_id ?? result.booking?.booking_id ?? result.booking?.id);
+  const cur = pass.data?.current;
 
   return (
     <div className="space-y-6">
@@ -64,39 +37,30 @@ export default function RiderHome() {
         </Link>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Swaps left" value={hasSub ? s.swaps_remaining ?? '—' : '—'} sub={hasSub ? `Plan ends ${dt(s.ends_at, { dateOnly: true })}` : 'No active plan'} tone={hasSub ? 'good' : undefined} />
+      <div className="grid gap-4 sm:grid-cols-2">
         <Stat label="Points" value={user?.points ?? 0} sub={user?.is_vip ? 'VIP member' : 'Earn points on every swap'} />
         <Stat label="Orders" value={orders.data?.length ?? '—'} sub="Most recent" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <Card title="⚡ Smart Swap" subtitle="We'll pick the nearest station with charged packs and reserve a locker.">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Max distance (km)"><Input type="number" min={1} max={100} value={maxKm} onChange={(e) => setMaxKm(+e.target.value)} /></Field>
-            <Field label="Arrive at (optional)"><Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} /></Field>
-          </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <Checkbox label="Book the locker automatically" checked={autoBook} onChange={(e) => setAutoBook(e.target.checked)} />
-            <Button onClick={doSmartSwap} loading={smart.busy}>Find me a battery</Button>
-          </div>
-          {result && (
-            <div className="mt-5 rounded-lg border border-ink-100 p-4">
-              <AutoView data={result} />
-              <RawJson data={result} />
-              {bookingId && <Button className="mt-4" variant="dark" onClick={() => router.push(`/rider/bookings/${bookingId}`)}>Open booking</Button>}
+      <Card title="Subscription" actions={<Link href="/rider/plans" className="text-sm font-medium text-volt-700">{cur ? 'Change plan' : 'Browse plans'}</Link>}>
+        {pass.loading ? <Loading /> : pass.error ? <ErrorBox error={pass.error} onRetry={pass.reload} /> : cur ? (
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="text-lg font-semibold text-ink-900">{cur.plan_name}</div>
+              <div className="text-sm text-ink-500">Active until {dt(cur.ends_at, { dateOnly: true })}</div>
             </div>
-          )}
-        </Card>
-
-        <Card title="Subscription" actions={<Link href="/rider/plans" className="text-sm font-medium text-volt-700">{hasSub ? 'Change' : 'Browse plans'}</Link>}>
-          {sub.loading ? <Loading /> : sub.error ? <ErrorBox error={sub.error} onRetry={sub.reload} /> : hasSub ? <AutoView data={s} /> : (
-            <div className="py-6 text-center text-sm text-ink-500">
-              You're paying per swap. <Link href="/rider/plans" className="font-medium text-volt-700">Save with a plan →</Link>
-            </div>
-          )}
-        </Card>
-      </div>
+            {cur.locker_id ? (
+              <div className="text-right text-sm text-ink-600">Locker <b className="font-mono text-ink-900">{cur.locker_id}</b><div className="text-xs text-ink-500">{cur.station_name}</div></div>
+            ) : (
+              <Link href="/rider/bookings" className="rounded-lg bg-volt-500 px-4 py-2 text-sm font-semibold text-volt-950 hover:bg-volt-400">Set your station</Link>
+            )}
+          </div>
+        ) : (
+          <div className="py-6 text-center text-sm text-ink-500">
+            No active plan. <Link href="/rider/plans" className="font-medium text-volt-700">Click here to subscribe to a plan →</Link>
+          </div>
+        )}
+      </Card>
 
       <Card title="Recent orders" actions={<Link href="/rider/orders" className="text-sm font-medium text-volt-700">View all</Link>}>
         {orders.loading ? <Loading /> : <><ErrorBox error={orders.error} /><OrdersTable rows={orders.data || []} onOpen={(o) => router.push(`/rider/orders/${o.id}`)} /></>}

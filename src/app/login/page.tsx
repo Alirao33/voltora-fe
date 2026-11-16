@@ -2,16 +2,19 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Auth } from '@/lib/endpoints';
 import { useAction } from '@/lib/hooks';
 import { AuthLayout } from '@/components/AuthLayout';
 import { homeFor, useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/Toast';
+import { cx } from '@/lib/format';
 import { Button, Field, Input, Tabs } from '@/components/ui';
 import { AutoView } from '@/components/AutoView';
 
 type Tab = 'password' | 'otp';
+type Portal = 'RIDER' | 'DRIVER';
 type TokenResponse = { access_token: string; refresh_token?: string | null };
 type OtpResponse = { sent?: boolean; challenge_id?: number; expires_in?: number; dev_code?: string };
 
@@ -23,7 +26,9 @@ function safeNext(raw: string | null | undefined): string | null {
 function LoginInner() {
   const sp = useSearchParams();
   const router = useRouter();
-  const { user, signIn } = useAuth();
+  const { user, signIn, signOut } = useAuth();
+  const toast = useToast();
+  const [portal, setPortal] = useState<Portal>(sp?.get('role') === 'driver' || (sp?.get('next') ?? '').startsWith('/driver') ? 'DRIVER' : 'RIDER'); // riders by default
   const next = safeNext(sp?.get('next'));
   const [tab, setTab] = useState<Tab>(sp?.get('tab') === 'otp' ? 'otp' : 'password');
   const [username, setUsername] = useState('');
@@ -35,16 +40,29 @@ function LoginInner() {
   const [otpSent, setOtpSent] = useState<OtpResponse | null>(null);
   const { run, busy } = useAction();
 
+  const checking = useRef(false); // true while a fresh sign-in is being checked against the chosen portal
+
   useEffect(() => {
-    if (user) router.replace(next ?? homeFor(user));
+    if (user && !checking.current) router.replace(next ?? homeFor(user));
   }, [user, next, router]);
 
   const signInWith = (request: () => Promise<TokenResponse | undefined>) =>
     run(async () => {
-      const tokens = await request();
-      if (!tokens?.access_token) return;
-      const me = await signIn(tokens);
-      router.replace(next ?? homeFor(me));
+      checking.current = true;
+      try {
+        const tokens = await request();
+        if (!tokens?.access_token) return;
+        const me = await signIn(tokens);
+        // Keep riders and delivery men on their own side: a mismatch signs back out with a friendly hint.
+        if (me && (me.role === 'RIDER' || me.role === 'DRIVER') && me.role !== portal) {
+          signOut();
+          toast.error(me.role === 'DRIVER' ? 'That is a delivery man account. Switch to Delivery man above.' : 'That is a rider account. Switch to Rider above.');
+          return;
+        }
+        router.replace(next ?? homeFor(me));
+      } finally {
+        checking.current = false;
+      }
     });
 
   const sendCode = () =>
@@ -52,7 +70,21 @@ function LoginInner() {
       .then(res => { if (res) setOtpSent(res); });
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Riders and drivers sign in here.">
+    <AuthLayout title="Welcome back" subtitle={portal === 'RIDER' ? 'Good to see you. Sign in to swap, track orders and manage your pass.' : 'Ready for the road? Sign in to see your deliveries.'}>
+      <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl bg-white/70 p-1.5 shadow-card ring-1 ring-ink-100 backdrop-blur" role="tablist" aria-label="Sign in as">
+        {([['RIDER', 'I am a rider'], ['DRIVER', 'I am a delivery man']] as const).map(([v, label]) => (
+          <button
+            key={v}
+            type="button"
+            role="tab"
+            aria-selected={portal === v}
+            onClick={() => setPortal(v)}
+            className={cx('rounded-xl px-3 py-2.5 text-sm font-semibold transition', portal === v ? 'bg-volt-500 text-volt-950 shadow' : 'text-ink-600 hover:bg-white')}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <Tabs value={tab} onChange={v => setTab(v === 'otp' ? 'otp' : 'password')} tabs={[{ value: 'password', label: 'Username' }, { value: 'otp', label: 'Phone (OTP)' }]} />
 
       {tab === 'password' ? (
@@ -97,7 +129,9 @@ function LoginInner() {
       )}
 
       <div className="mt-8 space-y-2 text-center text-sm text-ink-500">
-        <p>New here? <Link href="/register" className="font-medium text-volt-700">Create an account</Link></p>
+        {portal === 'RIDER'
+          ? <p>New here? <Link href="/register" className="font-medium text-volt-700">Create an account</Link></p>
+          : <p>Delivery man accounts are set up by your operator. Ask them if you can't sign in.</p>}
         <p>Operator? <Link href="/admin/login" className="font-medium text-ink-800">Admin sign in</Link></p>
       </div>
     </AuthLayout>

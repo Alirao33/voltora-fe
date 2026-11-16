@@ -7,7 +7,6 @@ import { Icons, PanelShell, type NavItem } from '@/components/PanelShell';
 const SUPER_ONLY_PREFIXES = [
   '/admin/payments',
   '/admin/plans',
-  '/admin/pricing',
   '/admin/fleet',
   '/admin/users',
   '/admin/audit',
@@ -22,6 +21,7 @@ const superAdminNav: NavItem[] = [
   { href: '/admin/alerts', label: 'Alerts', icon: Icons.bell },
   { section: 'Commerce' },
   { href: '/admin/orders', label: 'Orders', icon: Icons.receipt },
+  { href: '/admin/delivery', label: 'Home delivery', icon: Icons.truck },
   { href: '/admin/payments', label: 'Payments', icon: Icons.card },
   { href: '/admin/plans', label: 'Plans', icon: Icons.tag },
   { href: '/admin/pricing', label: 'Pricing engine', icon: Icons.sliders },
@@ -43,6 +43,8 @@ const stationAdminNav: NavItem[] = [
   { href: '/admin/alerts', label: 'Alerts', icon: Icons.bell },
   { section: 'Operations' },
   { href: '/admin/orders', label: 'Orders', icon: Icons.receipt },
+  { href: '/admin/delivery', label: 'Home delivery', icon: Icons.truck },
+  { href: '/admin/pricing', label: 'Pricing engine', icon: Icons.sliders },
   { href: '/admin/forecast', label: 'Forecasting', icon: Icons.brain },
   { href: '/admin/reports', label: 'Reports', icon: Icons.chart },
 ];

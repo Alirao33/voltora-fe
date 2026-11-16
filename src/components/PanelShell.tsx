@@ -61,8 +61,8 @@ export function PanelShell({ nav, children, area, logoutTo = '/login' }: { nav: 
   );
 
   return (
-    <div className="min-h-screen bg-ink-50">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-ink-950 lg:flex">
+    <div className="min-h-screen">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] lg:flex">
         <div className="flex h-16 items-center gap-2 px-5">
           <Logo dark />
           <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-300">{area}</span>
@@ -72,7 +72,7 @@ export function PanelShell({ nav, children, area, logoutTo = '/login' }: { nav: 
       </aside>
 
       {/* mobile */}
-      <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-ink-950 px-4 lg:hidden">
+      <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] px-4 lg:hidden">
         <Logo dark />
         <button className="rounded-md p-2 text-white" onClick={() => setOpen(true)} aria-label="Menu">
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
@@ -81,7 +81,7 @@ export function PanelShell({ nav, children, area, logoutTo = '/login' }: { nav: 
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 bg-black/50" />
-          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-ink-950" onClick={(e) => e.stopPropagation()}>
+          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c]" onClick={(e) => e.stopPropagation()}>
             <div className="flex h-14 items-center px-5"><Logo dark /></div>
             {navEl}
             {userEl}

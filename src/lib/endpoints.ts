@@ -5,7 +5,7 @@ import type * as T from './types';
 const enc = encodeURIComponent;
 
 export const Auth = {
-  register: (b: { username: string; password: string; phone?: string | null; full_name?: string | null }) =>
+  register: (b: { username: string; email: string; password: string; phone?: string | null; full_name?: string | null }) =>
     api<T.UserOut>('/register', { method: 'POST', body: b, auth: false }),
   login: (username: string, password: string) =>
     api<T.Token>('/token', { method: 'POST', form: { username, password, grant_type: 'password' }, auth: false }),
@@ -28,6 +28,8 @@ export const Users = {
 
 export const Rider = {
   subscription: () => api<any>('/api/rider/subscription'),
+  lockerPass: () => api<any>('/api/rider/locker-pass'),
+  setLockerStation: (station_id: string) => api<any>('/api/rider/locker-pass/station', { method: 'POST', body: { station_id } }),
   cancelSubscription: () => api<any>('/api/rider/subscription/cancel', { method: 'POST' }),
   subscribe: (planId: number | string, b: { payment_method: T.PaymentMethod; payment_reference: string }) =>
     api<T.SubscriptionOut>(`/api/rider/plans/${enc(String(planId))}/subscribe`, { method: 'POST', body: b }),
@@ -38,6 +40,9 @@ export const Rider = {
     api<T.OrderOut>(`/api/rider/orders/${id}/unlock`, { method: 'POST', body: { pickup_code } }),
   complete: (id: number | string, returned_pack_id?: string | null) =>
     api<T.OrderOut>(`/api/rider/orders/${id}/complete`, { method: 'POST', body: { returned_pack_id: returned_pack_id || null } }),
+  messages: (id: number | string) => api<any>(`/api/rider/orders/${id}/messages`),
+  sendMessage: (id: number | string, body: string) => api<any>(`/api/rider/orders/${id}/messages`, { method: 'POST', body: { body } }),
+  respondLockerCode: (id: number | string, allow: boolean) => api<any>(`/api/rider/orders/${id}/locker-code`, { method: 'POST', body: { allow } }),
   cancel: (id: number | string) => api<T.OrderOut>(`/api/rider/orders/${id}/cancel`, { method: 'POST' }),
   rate: (id: number | string, rating: number, review?: string | null) =>
     api<T.OrderOut>(`/api/rider/orders/${id}/rate`, { method: 'POST', body: { rating, review: review || null } }),
@@ -120,6 +125,7 @@ export const Admin = {
     api<any>('/api/admin/pilot/run', { method: 'POST', body: b }),
   // reports
   summary: (q: { start?: string; end?: string }) => api<any>('/api/admin/reports/summary', { query: q }),
+  reportLog: (q: { start?: string; end?: string }) => api<any>('/api/admin/reports/log', { query: q }),
   async revenueCsv(q: { start?: string; end?: string }): Promise<Blob> {
     const res = await api<Response>('/api/admin/reports/revenue.csv', { query: q, raw: true, headers: { Accept: 'text/csv' } });
     return res.blob();
@@ -131,6 +137,9 @@ export const Driver = {
   tasks: (include_done = false) => api<T.VanTaskOut[]>('/api/driver/tasks', { query: { include_done } }),
   location: (latitude: number, longitude: number) =>
     api<T.VanOut>('/api/driver/location', { method: 'POST', body: { latitude, longitude } }),
+  messages: (orderId: number) => api<any>(`/api/driver/orders/${orderId}/messages`),
+  sendMessage: (orderId: number, body: string) => api<any>(`/api/driver/orders/${orderId}/messages`, { method: 'POST', body: { body } }),
+  requestLockerCode: (orderId: number) => api<any>(`/api/driver/orders/${orderId}/locker-code/request`, { method: 'POST' }),
   confirm: (id: number, b: { delivery_otp?: string | null; confirmed_drop?: number | null; confirmed_pickup?: number | null; returned_pack_id?: string | null }) =>
     api<T.VanTaskOut>(`/api/driver/tasks/${id}/confirm`, { method: 'POST', body: b }),
   returnToDepot: () => api<any>('/api/driver/return-to-depot', { method: 'POST' }),

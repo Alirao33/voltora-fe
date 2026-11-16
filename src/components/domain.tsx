@@ -125,10 +125,9 @@ export function MockPaymentFields({ method, decline, onMethod, onDecline, lastRe
   );
 }
 
-/** OpenStreetMap embed centred on a point. */
+/** Map embed centred on a point, with English labels (the OpenStreetMap embed shows local-language names). */
 export function MiniMap({ lat, lon, className = 'h-64' }: { lat: number; lon: number; className?: string }) {
-  const d = 0.01;
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lon - d},${lat - d},${lon + d},${lat + d}&layer=mapnik&marker=${lat},${lon}`;
+  const src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&hl=en&output=embed`;
   return <iframe title="map" src={src} className={`w-full rounded-xl border border-ink-200 ${className}`} loading="lazy" />;
 }
 
