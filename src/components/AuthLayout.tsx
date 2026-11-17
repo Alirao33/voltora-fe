@@ -13,11 +13,11 @@ export function AuthLayout({ title, subtitle, children, side }: { title: string;
           </div>
         </div>
       </div>
-      <div className="relative hidden overflow-hidden bg-volt-500 lg:block">
-        <div className="relative flex h-full flex-col justify-end p-12 text-ink-900">
+      <div className="relative hidden overflow-hidden bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] lg:block">
+        <div className="relative flex h-full flex-col justify-end p-12 text-white">
           {side ?? (
             <>
-              <div className="id-mono text-ink-900">⚡ 98% · 48.2V · 27°C</div>
+              <div className="id-mono text-volt-300">⚡ 98% · 48.2V · 27°C</div>
               <p className="mt-4 max-w-md text-3xl font-bold leading-tight">Every pack is monitored live, so the one you pick up is always healthy and full.</p>
             </>
           )}

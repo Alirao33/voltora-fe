@@ -5,7 +5,7 @@ import { num } from '@/lib/format';
 type Pt = { t: number; v: number };
 
 /** Lightweight SVG time-series chart with hover readout. */
-export function LineChart({ points, label, unit = '', color = '#3f7d1a', height = 160 }: { points: Pt[]; label: string; unit?: string; color?: string; height?: number }) {
+export function LineChart({ points, label, unit = '', color = '#068244', height = 160 }: { points: Pt[]; label: string; unit?: string; color?: string; height?: number }) {
   const W = 600;
   const H = height;
   const P = { l: 48, r: 12, t: 14, b: 28 };

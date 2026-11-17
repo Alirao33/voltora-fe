@@ -5,16 +5,16 @@
 /* Design tokens. Tailwind carries the same values (tailwind.config.ts); these are for plain CSS. */
 :root {
   color-scheme: light;
-  --brand: #84c441; /* lime, solid fills only: text on it is always dark */
-  --brand-hover: #73b034;
-  --brand-deep: #3f7d1a; /* links, icons, focus rings */
-  --brand-tint: #e4f2cf; /* chips, active items */
-  --canvas: #f7faf3;
+  --brand: #0ec866; /* emerald, solid fills only: text on it is always dark */
+  --brand-hover: #04a552;
+  --brand-deep: #068244; /* links, icons, focus rings */
+  --brand-tint: #d9fde8; /* chips, active items */
+  --canvas: #eef5f1;
   --surface: #ffffff;
-  --line: #e3ebd8;
-  --text-heading: #0e1a0b;
-  --text-body: #3a4a32;
-  --text-muted: #4b5a43;
+  --line: #e1e6ec;
+  --text-heading: #1b202a;
+  --text-body: #2b3240;
+  --text-muted: #525f78;
   --radius-card: 16px;
 }
 
@@ -28,8 +28,8 @@
 
   /* Flat page background. Body copy: 15px on a 1.5 line height, normal weight. */
   body {
-    font-size: 0.9375rem;
-    line-height: 1.5rem;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
     font-weight: 400;
     letter-spacing: normal;
     background: var(--canvas);
@@ -46,12 +46,12 @@
 @layer components {
   /* Small uppercase caption above a value or an input. */
   .label {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: #434e62;
   }
   .num {
     font-variant-numeric: tabular-nums;
@@ -59,14 +59,14 @@
   /* Identifiers only: ORD-7, VOLT-0003, RCP-000007. */
   .id-mono {
     font-family: var(--font-mono), ui-monospace, monospace;
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     letter-spacing: 0;
   }
   .surface {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
-    box-shadow: 0 1px 2px rgba(14, 26, 11, 0.04), 0 2px 8px rgba(14, 26, 11, 0.05);
+    box-shadow: 0 1px 2px rgba(15, 18, 24, 0.04), 0 2px 8px rgba(15, 18, 24, 0.05);
   }
 }
 
@@ -75,7 +75,7 @@
     animation: slide-in 0.2s ease-out;
   }
   .skeleton {
-    background: linear-gradient(90deg, #eef3e7 25%, #f7faf3 37%, #eef3e7 63%);
+    background: linear-gradient(90deg, #eceef2 25%, #f6f7f9 37%, #eceef2 63%);
     background-size: 400% 100%;
     animation: shimmer 1.4s ease infinite;
     border-radius: 8px;

@@ -130,28 +130,28 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right panel: flat lime with dark text */}
-      <div className="hidden lg:flex w-1/2 bg-volt-500 p-16 flex-col justify-between relative overflow-hidden">
+      {/* Right panel: dark green */}
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] p-16 flex-col justify-between relative overflow-hidden">
 
         <div className="relative z-10 flex justify-end">
-          <span className="px-3.5 py-1.5 rounded-full bg-white text-ink-900 text-xs font-medium">
+          <span className="px-3.5 py-1.5 rounded-full bg-white/10 text-white text-xs font-medium">
             ● Voltora Network
           </span>
         </div>
 
         <div className="relative z-10 space-y-4 max-w-lg">
-          <div className="flex items-center space-x-3 text-ink-900 text-sm font-mono">
+          <div className="flex items-center space-x-3 text-volt-300 text-sm font-mono">
             <span>⚡ 98%</span>
             <span>48.2V</span>
             <span>27°C</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-ink-900 leading-tight">
+          <h2 className="text-3xl font-bold text-white leading-tight">
             Every pack is monitored live, so the one you pick up is always healthy and full
           </h2>
         </div>
 
-        <div className="relative z-10 border-t border-ink-900/15 pt-6 flex justify-between items-center text-xs text-ink-800">
+        <div className="relative z-10 border-t border-white/10 pt-6 flex justify-between items-center text-xs text-ink-300">
           <span>© Voltora Network Karachi</span>
           <span>Battery Telemetry Systems</span>
         </div>

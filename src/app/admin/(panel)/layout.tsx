@@ -10,6 +10,7 @@ const SUPER_ONLY_PREFIXES = [
   '/admin/fleet',
   '/admin/users',
   '/admin/audit',
+  '/admin/approvals',
 ];
 
 const superAdminNav: NavItem[] = [
@@ -25,6 +26,8 @@ const superAdminNav: NavItem[] = [
   { href: '/admin/payments', label: 'Payments', icon: Icons.card },
   { href: '/admin/plans', label: 'Plans', icon: Icons.tag },
   { href: '/admin/pricing', label: 'Pricing engine', icon: Icons.sliders },
+  { href: '/admin/approvals', label: 'Approvals', icon: Icons.check },
+  { href: '/admin/profit', label: 'Profit log', icon: Icons.card },
   { section: 'Operations' },
   { href: '/admin/fleet', label: 'Vans & routes', icon: Icons.truck },
   { href: '/admin/forecast', label: 'Forecasting', icon: Icons.brain },
@@ -45,6 +48,7 @@ const stationAdminNav: NavItem[] = [
   { href: '/admin/orders', label: 'Orders', icon: Icons.receipt },
   { href: '/admin/delivery', label: 'Home delivery', icon: Icons.truck },
   { href: '/admin/pricing', label: 'Pricing engine', icon: Icons.sliders },
+  { href: '/admin/profit', label: 'Profit log', icon: Icons.card },
   { href: '/admin/forecast', label: 'Forecasting', icon: Icons.brain },
   { href: '/admin/reports', label: 'Reports', icon: Icons.chart },
 ];

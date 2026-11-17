@@ -10,58 +10,65 @@ export default {
       },
       // Type scale. Bold (600-700) is only for page titles, section titles and stat numbers.
       fontSize: {
-        page: ['1.75rem', { lineHeight: '2.25rem', fontWeight: '700' }], // 28px page titles
-        section: ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }], // 20px section and card titles
-        body: ['0.9375rem', { lineHeight: '1.5rem' }], // 15px
-        cell: ['0.875rem', { lineHeight: '1.25rem' }], // 14px table cells
-        label: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.03em' }], // 12px, used uppercase
-        stat: ['2rem', { lineHeight: '2.25rem', fontWeight: '700' }], // 32px stat numbers
+        // Raised again so every page reads comfortably. Bold (600-700) is only for titles and stat numbers.
+        xs: ['0.875rem', { lineHeight: '1.375rem' }], // 14px
+        sm: ['1rem', { lineHeight: '1.5rem' }], // 16px
+        base: ['1.125rem', { lineHeight: '1.75rem' }], // 18px
+        lg: ['1.25rem', { lineHeight: '1.875rem' }], // 20px
+        xl: ['1.5rem', { lineHeight: '2rem' }], // 24px
+        '2xl': ['1.75rem', { lineHeight: '2.25rem' }], // 28px
+        page: ['2.125rem', { lineHeight: '2.625rem', fontWeight: '700' }], // 34px page titles
+        section: ['1.5rem', { lineHeight: '2rem', fontWeight: '600' }], // 24px section and card titles
+        body: ['1.125rem', { lineHeight: '1.75rem' }], // 18px
+        cell: ['1.0625rem', { lineHeight: '1.625rem' }], // 17px table cells
+        label: ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.03em' }], // 14px, used uppercase
+        stat: ['2.5rem', { lineHeight: '2.75rem', fontWeight: '700' }], // 40px stat numbers
       },
       colors: {
-        // Lime brand. 500 is the brand colour, 600 its hover, 700 the deep green for links, icons and focus rings.
+        // Emerald brand. 500 is the brand colour, 600 its hover, 700 the deep green for links, icons and focus rings.
         volt: {
-          50: '#f1f7e7', // table headers
-          100: '#e4f2cf', // chips, active items
-          200: '#d3e8b3',
-          300: '#b9db8a',
-          400: '#9fd05f',
-          500: '#84c441',
-          600: '#73b034',
-          700: '#3f7d1a',
-          800: '#35661a',
-          900: '#2a4f15',
-          950: '#0e1a0b',
+          50: '#effef5',
+          100: '#d9fde8',
+          200: '#b4f9d2',
+          300: '#79f2b0',
+          400: '#37e286',
+          500: '#0ec866',
+          600: '#04a552',
+          700: '#068244',
+          800: '#0b6639',
+          900: '#0b5431',
+          950: '#002f19',
         },
-        // Green-tinted neutrals. 900 headings, 700 body, 600 muted, 200 borders.
         ink: {
-          50: '#f7faf3',
-          100: '#eef3e7',
-          200: '#e3ebd8',
-          300: '#cfdac3',
-          400: '#9aa98f',
-          500: '#6b7b62',
-          600: '#4b5a43',
-          700: '#3a4a32',
-          800: '#26331f',
-          900: '#0e1a0b',
-          950: '#0a1307',
+          50: '#f6f7f9',
+          100: '#eceef2',
+          200: '#d5dae2',
+          300: '#b1bac9',
+          400: '#8694ab',
+          500: '#677791',
+          600: '#525f78',
+          700: '#434e62',
+          800: '#2b3240',
+          900: '#1b202a',
+          950: '#0f1218',
         },
-        canvas: '#f7faf3', // page background
-        line: '#e3ebd8', // 1px borders
-        accent: '#5fa21f', // 3px active bar in the sidebar
+        canvas: '#eef5f1', // page background
+        line: '#e1e6ec', // 1px borders
+        accent: '#0ec866', // active bar in the sidebar
+        sidebar: { DEFAULT: '#0a3a2c', hover: '#16262a', active: '#17302a' },
         // Status pills: soft tint plus dark text, every pair is 5:1 or better.
         status: {
-          success: { bg: '#e4f2cf', fg: '#2a5a10' },
+          success: { bg: '#d9fde8', fg: '#0b5431' },
           danger: { bg: '#fde8e6', fg: '#b42318' },
           warning: { bg: '#fdf0cc', fg: '#8a5300' },
           info: { bg: '#e0ecff', fg: '#1d4ed8' },
-          neutral: { bg: '#eef3e7', fg: '#3a4a32' },
+          neutral: { bg: '#eceef2', fg: '#434e62' },
         },
       },
       borderRadius: { card: '1rem' }, // 16px cards
       boxShadow: {
-        card: '0 1px 2px rgba(14,26,11,.04), 0 2px 8px rgba(14,26,11,.05)',
-        lift: '0 8px 24px rgba(14,26,11,.10), 0 2px 6px rgba(14,26,11,.06)',
+        card: '0 1px 2px rgba(15,18,24,.04), 0 2px 8px rgba(15,18,24,.05)',
+        lift: '0 8px 24px rgba(15,18,24,.10), 0 2px 6px rgba(15,18,24,.06)',
       },
     },
   },

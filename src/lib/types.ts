@@ -127,7 +127,7 @@ export interface PricingConfig {
   peak_hours_pkt: [number, number][]; scarcity_threshold: number; scarcity_uplift: number;
   max_demand_factor: number; thermal_adjustment_enabled: boolean; green_rebate_max_c: number;
   green_rebate_pct: number; standard_max_c: number; thermal_penalty_pct: number;
-  soc_rate_pkr_per_pct: number; same_soh_discount_pct: number; delivery_rate_pkr_per_km: number; penalty_temp_pkr_per_pt: number; penalty_cycle_pkr_per_pt: number; penalty_fault_pkr_per_pt: number;
+  soc_rate_pkr_per_unit: number; same_soh_discount_pct: number; delivery_rate_pkr_per_km: number; penalty_temp_pkr_per_pt: number; penalty_cycle_pkr_per_pt: number; penalty_fault_pkr_per_pt: number;
 }
 
 export interface StationCreate {

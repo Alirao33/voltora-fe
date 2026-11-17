@@ -21,12 +21,12 @@ export function Button({ variant = 'primary', size = 'md', loading, icon, classN
       {...p}
       disabled={disabled || loading}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-[10px] text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:border-ink-200 disabled:bg-ink-100 disabled:text-ink-500',
+        'inline-flex items-center justify-center gap-2 rounded-[10px] text-[17px] font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:border-ink-200 disabled:bg-ink-100 disabled:text-ink-500',
         size === 'sm' && 'h-9 px-3',
         size === 'md' && 'h-11 px-5',
         size === 'lg' && 'h-12 px-6',
         primary && 'bg-volt-500 text-volt-950 hover:bg-volt-600 disabled:hover:bg-ink-100',
-        !primary && 'border border-line bg-white text-volt-700 hover:bg-volt-50 disabled:hover:bg-ink-100',
+        !primary && 'border border-ink-300 bg-white text-ink-900 hover:bg-volt-50 disabled:hover:bg-ink-100',
         !primary && destructive && 'hover:text-red-700',
         className,
       )}
@@ -88,12 +88,12 @@ export function Card({ title, actions, children, className, bodyClass }: { title
   return (
     <section className={cx('surface min-w-0', className)}>
       {(title || actions) && (
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-5">
           {title && <h2 className="min-w-0 text-section text-ink-900">{title}</h2>}
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={cx('p-5', bodyClass)}>{children}</div>
+      <div className={cx('p-6', bodyClass)}>{children}</div>
     </section>
   );
 }
@@ -123,16 +123,24 @@ export function PageHeader({ title, desc, actions }: { title: ReactNode; desc?: 
   );
 }
 
+const CHIPS = ['bg-volt-100 text-volt-700', 'bg-blue-100 text-blue-700', 'bg-amber-100 text-amber-700', 'bg-violet-100 text-violet-700', 'bg-rose-100 text-rose-700', 'bg-teal-100 text-teal-700'];
+/** The same label always gets the same colour, so stat cards are colourful but stable. */
+const chipFor = (label: ReactNode) => {
+  let h = 0;
+  for (const c of typeof label === 'string' ? label : '') h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return CHIPS[h % CHIPS.length];
+};
+
 const DEFAULT_ICON = <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 3v18h18M7 15l4-4 3 3 5-6" /></svg>;
 
 /** Equal-height stat card: green icon chip, small uppercase label, large dark number. */
 export function Stat({ label, value, sub, tone, icon }: { label: ReactNode; value: ReactNode; sub?: ReactNode; tone?: 'good' | 'warn' | 'bad'; icon?: ReactNode }) {
   return (
-    <div className="surface flex h-full min-h-[116px] items-start gap-4 p-5">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-volt-100 text-volt-700">{icon ?? DEFAULT_ICON}</span>
+    <div className="surface flex h-full min-h-[140px] items-start gap-5 p-6">
+      <span className={cx('flex h-12 w-12 shrink-0 items-center justify-center rounded-xl', chipFor(label))}>{icon ?? DEFAULT_ICON}</span>
       <div className="min-w-0">
         <div className="label">{label}</div>
-        <div className={cx('num mt-1 text-stat', tone === 'warn' && 'text-amber-700', tone === 'bad' && 'text-red-600', (!tone || tone === 'good') && 'text-ink-900')}>{value}</div>
+        <div className={cx('num mt-1 whitespace-nowrap text-[2.125rem] font-bold leading-10', tone === 'warn' && 'text-amber-700', tone === 'bad' && 'text-red-600', (!tone || tone === 'good') && 'text-ink-900')}>{value}</div>
         {sub && <div className="mt-0.5 text-cell text-ink-600">{sub}</div>}
       </div>
     </div>
@@ -142,10 +150,10 @@ export const StatCard = Stat;
 
 /* ---------- Status ---------- */
 // Completed = green, Cancelled = red, Expired = amber, In flight = blue, everything else neutral.
-const GOOD = ['COMPLETED', 'SUCCEEDED', 'CHARGED', 'NORMAL', 'ACTIVE', 'AVAILABLE', 'DONE', 'TRUE', 'OK', 'READY', 'UNLOCKED', 'CONFIRMED', 'LIVE', 'RESOLVED', 'LOW'];
+const GOOD = ['COMPLETED', 'SUCCEEDED', 'CHARGED', 'NORMAL', 'ACTIVE', 'AVAILABLE', 'DONE', 'TRUE', 'OK', 'READY', 'UNLOCKED', 'CONFIRMED', 'LIVE', 'RESOLVED', 'LOW', 'APPROVED', 'RECEIVED'];
 const INFLIGHT = ['PENDING_PAYMENT', 'AWAITING_APPROVAL', 'PAID', 'IN_PROGRESS', 'REQUESTED', 'SHARED', 'ACKNOWLEDGED', 'ON_VAN', 'IN_USE', 'INFO'];
-const WARN = ['EXPIRED', 'PENDING', 'WARNING', 'CHARGING', 'ONE_LEFT', 'RESERVED', 'RESERVED_VIP', 'PARTIALLY_REFUNDED', 'BOOKED', 'WEAK_PACK', 'LOW_SUPPLY', 'MEDIUM', 'HIGH'];
-const BAD = ['FAILED', 'CRITICAL', 'RETIRE', 'RETIRED', 'FULL', 'CANCELLED', 'LOCKED', 'DEPLETED', 'STOCK_OUT', 'OVER_TEMP', 'LOCKOUT', 'MAINTENANCE', 'REFUNDED', 'FALSE', 'PACK_RETIRED', 'ERROR', 'DOWN'];
+const WARN = ['EXPIRED', 'PENDING', 'WARNING', 'CHARGING', 'ONE_LEFT', 'RESERVED', 'RESERVED_VIP', 'PARTIALLY_REFUNDED', 'BOOKED', 'WEAK_PACK', 'LOW_SUPPLY', 'MEDIUM', 'HIGH', 'DUE'];
+const BAD = ['FAILED', 'CRITICAL', 'RETIRE', 'RETIRED', 'FULL', 'CANCELLED', 'LOCKED', 'DEPLETED', 'STOCK_OUT', 'OVER_TEMP', 'LOCKOUT', 'MAINTENANCE', 'REFUNDED', 'FALSE', 'PACK_RETIRED', 'ERROR', 'DOWN', 'REJECTED'];
 
 export function Badge({ value, className }: { value: unknown; className?: string }) {
   const s = String(value ?? '—');
@@ -154,7 +162,7 @@ export function Badge({ value, className }: { value: unknown; className?: string
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium leading-none',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[15px] font-semibold leading-none',
         tone === 'good' && 'bg-status-success-bg text-status-success-fg',
         tone === 'info' && 'bg-status-info-bg text-status-info-fg',
         tone === 'warn' && 'bg-status-warning-bg text-status-warning-fg',
@@ -266,7 +274,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { valu
           role="tab"
           aria-selected={value === t.value}
           onClick={() => onChange(t.value)}
-          className={cx('h-9 whitespace-nowrap rounded-lg px-4 text-sm font-medium transition-colors duration-150', value === t.value ? 'bg-white text-ink-900 shadow-card' : 'text-ink-600 hover:text-ink-900')}
+          className={cx('h-9 whitespace-nowrap rounded-lg px-4 text-[17px] font-semibold transition-colors duration-150', value === t.value ? 'bg-white text-ink-900 shadow-card' : 'text-ink-600 hover:text-ink-900')}
         >
           {t.label}
         </button>
@@ -276,18 +284,20 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { valu
 }
 
 /* ---------- Table ---------- */
-export type Col<T> = { key: string; header: ReactNode; render?: (row: T) => ReactNode; className?: string; align?: 'right' };
+export type Col<T> = { key: string; header: ReactNode; render?: (row: T) => ReactNode; className?: string; align?: 'right'; hideBelow?: 'lg' | 'xl' | '2xl' };
+// Lower-priority columns drop out on narrower screens so the rest keep room to breathe.
+const HIDE = { lg: 'hidden lg:table-cell', xl: 'hidden xl:table-cell', '2xl': 'hidden 2xl:table-cell' } as const;
 
 /** Light green sticky header, 56px rows, right-aligned numbers, row hover. Scrolls sideways on small screens. */
 export function DataTable<T>({ rows, cols, onRowClick, rowKey, empty }: { rows: T[]; cols: Col<T>[]; onRowClick?: (r: T) => void; rowKey?: (r: T, i: number) => string | number; empty?: ReactNode }) {
   if (!rows.length) return <Empty>{empty}</Empty>;
   return (
-    <div className="-mx-5 max-h-[70vh] overflow-auto">
-      <table className="min-w-full text-cell">
+    <div className="-mx-6 max-h-[75vh] overflow-auto">
+      <table className="min-w-full border-separate border-spacing-0 text-cell">
         <thead>
           <tr className="text-left">
             {cols.map((c) => (
-              <th key={c.key} className={cx('label sticky top-0 z-10 whitespace-nowrap border-y border-line bg-volt-50 px-5 py-3', c.align === 'right' && 'text-right', c.className)}>
+              <th key={c.key} className={cx('label sticky top-0 z-10 whitespace-nowrap border-y border-line bg-ink-50 px-5 py-5 first:pl-8 last:pr-8', c.align === 'right' && 'text-right', c.hideBelow && HIDE[c.hideBelow], c.className)}>
                 {c.header}
               </th>
             ))}
@@ -298,10 +308,10 @@ export function DataTable<T>({ rows, cols, onRowClick, rowKey, empty }: { rows: 
             <tr
               key={rowKey ? rowKey(r, i) : i}
               onClick={onRowClick ? () => onRowClick(r) : undefined}
-              className={cx('h-14 border-b border-line transition-colors duration-150 last:border-0 hover:bg-ink-50', onRowClick && 'cursor-pointer')}
+              className={cx('group h-[76px] transition-colors duration-150 even:bg-ink-50/60 hover:bg-volt-50', onRowClick && 'cursor-pointer')}
             >
               {cols.map((c) => (
-                <td key={c.key} className={cx('whitespace-nowrap px-5 py-2 text-ink-700', c.align === 'right' && 'num text-right', c.className)}>
+                <td key={c.key} className={cx('whitespace-nowrap border-b border-ink-100 px-5 py-3.5 text-ink-800 first:pl-8 first:font-medium last:pr-8 group-last:border-b-0', c.align === 'right' && 'num text-right font-medium text-ink-900', c.hideBelow && HIDE[c.hideBelow], c.className)}>
                   {c.render ? c.render(r) : String((r as any)[c.key] ?? '—')}
                 </td>
               ))}
@@ -320,5 +330,5 @@ export function Toolbar({ children }: { children: ReactNode }) {
 
 /** Identifiers only: ORD-7, VOLT-0003, RCP-000007. */
 export function Mono({ children }: { children: ReactNode }) {
-  return <span className="id-mono text-ink-700">{children}</span>;
+  return <span className="id-mono inline-block rounded-md bg-ink-100 px-2.5 py-1.5 font-medium text-ink-800">{children}</span>;
 }
