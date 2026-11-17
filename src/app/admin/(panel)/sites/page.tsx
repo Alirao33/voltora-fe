@@ -125,8 +125,8 @@ export default function SitesPage() {
                   <div key={stationId(s) || i} className="rounded-xl border border-ink-200 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <div className="font-semibold">{stationName(s)} <Mono>{stationId(s)}</Mono></div>
-                        <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-ink-500">
+                        <div className="font-medium">{stationName(s)} <Mono>{stationId(s)}</Mono></div>
+                        <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-ink-600">
                           {Object.entries(s).filter(([k, v]) => typeof v === 'number' && !/lat|lon/.test(k)).map(([k, v]) => <span key={k}>{k.replace(/_/g, ' ')}: <b className="text-ink-800">{num(v as number)}</b></span>)}
                         </div>
                       </div>
@@ -141,11 +141,11 @@ export default function SitesPage() {
                           <button key={lockerId(l)} onClick={() => setEditLocker({ _id: lockerId(l), status: l.status ?? '', max_battery_capacity: l.max_battery_capacity ?? '', door_lock_state: l.door_lock_state ?? '', _raw: l })}
                             className="rounded-lg border border-ink-200 p-2.5 text-left text-xs hover:border-volt-400">
                             <div className="flex items-center justify-between">
-                              <span className="font-mono font-semibold">{l.door_number ?? lockerId(l)}</span>
+                              <span className="font-mono font-medium">{l.door_number ?? lockerId(l)}</span>
                               <span>{l.door_lock_state === 'UNLOCKED' ? '🔓' : '🔒'}</span>
                             </div>
                             <div className="mt-1.5"><Badge value={l.status} /></div>
-                            <div className="mt-1.5 text-ink-500">{l.current_occupied_batteries ?? '?'} / {l.max_battery_capacity ?? '?'} packs</div>
+                            <div className="mt-1.5 text-ink-600">{l.current_occupied_batteries ?? '?'} / {l.max_battery_capacity ?? '?'} packs</div>
                           </button>
                         ))}
                       </div>

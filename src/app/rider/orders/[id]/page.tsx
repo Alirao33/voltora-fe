@@ -70,11 +70,11 @@ export default function OrderDetail() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Link href="/rider/orders" className="text-sm text-ink-500 hover:text-ink-800">← My orders</Link>
-          <h1 className="mt-1 flex items-center gap-3 text-2xl font-semibold tracking-tight">
+          <Link href="/rider/orders" className="text-sm text-ink-600 hover:text-ink-800">← My orders</Link>
+          <h1 className="mt-1 flex items-center gap-3 text-page text-ink-900">
             <span className="font-mono">{o.order_id}</span> <Badge value={o.status} />
           </h1>
-          <p className="text-sm text-ink-500">{o.mode.toLowerCase()} swap at {o.station_id} · created {dt(o.created_at)}</p>
+          <p className="text-sm text-ink-600">{o.mode.toLowerCase()} swap at {o.station_id} · created {dt(o.created_at)}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={async () => { const r = await act.run(() => Rider.receipt(o.id)); if (r) setReceipt(r); }}>Receipt</Button>
@@ -88,7 +88,7 @@ export default function OrderDetail() {
           {flow.map((s, i) => (
             <div key={s} className="flex flex-1 items-center gap-2">
               <div className={cx('h-1.5 flex-1 rounded-full', i <= step ? 'bg-volt-500' : 'bg-ink-200')} />
-              <span className={cx('hidden text-xs sm:inline', i <= step ? 'font-medium text-ink-800' : 'text-ink-400')}>{s.replace('_', ' ').toLowerCase()}</span>
+              <span className={cx('hidden text-xs sm:inline', i <= step ? 'font-medium text-ink-800' : 'text-ink-600')}>{s.replace('_', ' ').toLowerCase()}</span>
             </div>
           ))}
         </div>
@@ -107,8 +107,8 @@ export default function OrderDetail() {
           {o.mode === 'HOME' && o.driver_name && !['CANCELLED', 'EXPIRED', 'FAILED'].includes(o.status) && (
             <>
               <Card title="Your delivery man">
-                <p className="text-lg font-semibold text-ink-900">{o.driver_name}</p>
-                <p className="text-sm text-ink-500">{o.van_name ? `Van ${o.van_name} · ` : ''}on the way with your battery. Message them below, and share your delivery OTP only when you receive the pack.</p>
+                <p className="text-lg font-medium text-ink-900">{o.driver_name}</p>
+                <p className="text-sm text-ink-600">{o.van_name ? `Van ${o.van_name} · ` : ''}on the way with your battery. Message them below, and share your delivery OTP only when you receive the pack.</p>
               </Card>
               <Card title={`Chat with ${o.driver_name}`}>
                 <OrderChat orderId={o.id} side="RIDER" />
@@ -117,15 +117,15 @@ export default function OrderDetail() {
           )}
 
           {o.pickup_code && !closed && o.status !== 'AWAITING_APPROVAL' && (
-            <div className="rounded-2xl bg-ink-950 p-6 text-white">
-              <div className="text-xs uppercase tracking-widest text-ink-400">{o.mode === 'HOME' ? 'Locker code · only you can see this' : 'Pickup code'}</div>
-              <div className="mt-2 font-mono text-4xl font-semibold tracking-[0.3em] text-volt-400">{o.pickup_code}</div>
-              <div className="mt-3 text-sm text-ink-300">
+            <div className="rounded-card border border-volt-300 bg-volt-50 p-6 text-ink-900">
+              <div className="label !text-volt-800">{o.mode === 'HOME' ? 'Locker code · only you can see this' : 'Pickup code'}</div>
+              <div className="mt-2 num text-4xl font-bold tracking-[0.3em] text-volt-900">{o.pickup_code}</div>
+              <div className="mt-3 text-body text-ink-700">
                 {o.slot_id && <>Slot <b className="font-mono">{o.slot_id}</b> · </>}
                 {o.hold_expires_at && <>held until {dt(o.hold_expires_at)}</>}
               </div>
-              {o.mode === 'HOME' && <div className="mt-3 text-sm text-ink-300">{o.locker_code_shared ? 'The delivery man can see this code.' : 'The delivery man cannot see this code unless you allow it.'}</div>}
-              {o.delivery_otp && <div className="mt-3 text-sm text-ink-300">Delivery OTP for the delivery man: <b className="font-mono text-white">{o.delivery_otp}</b></div>}
+              {o.mode === 'HOME' && <div className="mt-3 text-body text-ink-700">{o.locker_code_shared ? 'The delivery man can see this code.' : 'The delivery man cannot see this code unless you allow it.'}</div>}
+              {o.delivery_otp && <div className="mt-3 text-body text-ink-700">Delivery OTP for the delivery man: <b className="id-mono text-ink-900">{o.delivery_otp}</b></div>}
             </div>
           )}
 
@@ -135,7 +135,7 @@ export default function OrderDetail() {
                 <p className="text-sm text-volt-700">Bill paid on {dt(o.bill_paid_at)} · {pkr(o.charged_pkr)}{o.bill_penalty_pkr ? ` (includes ${pkr(o.bill_penalty_pkr)} late penalty)` : ''}</p>
               ) : o.bill_due_pkr != null ? (
                 <div className="space-y-3">
-                  <div className="font-mono text-2xl font-semibold">{pkr(o.bill_due_pkr)}</div>
+                  <div className="num text-section">{pkr(o.bill_due_pkr)}</div>
                   <p className={cx('text-sm', (o.bill_penalty_pkr ?? 0) > 0 ? 'text-red-600' : 'text-ink-600')}>
                     {(o.bill_penalty_pkr ?? 0) > 0
                       ? `Overdue since ${dt(o.payment_due_at)}. Includes a 5% penalty (${pkr(o.bill_penalty_pkr)}).`
@@ -190,23 +190,23 @@ export default function OrderDetail() {
 
         <Card title="Summary">
           <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div><dt className="text-xs text-ink-500">Quoted total</dt><dd className="font-mono text-lg font-semibold">{pkr(o.total_pkr)}</dd></div>
-            <div><dt className="text-xs text-ink-500">Charged</dt><dd className="font-mono text-lg font-semibold">{pkr(o.charged_pkr)}</dd></div>
-            <div><dt className="text-xs text-ink-500">Actual total</dt><dd className="font-mono">{pkr(o.actual_total_pkr)}</dd></div>
+            <div><dt className="text-xs text-ink-600">Quoted total</dt><dd className="num text-lg font-medium">{pkr(o.total_pkr)}</dd></div>
+            <div><dt className="text-xs text-ink-600">Charged</dt><dd className="num text-lg font-medium">{pkr(o.charged_pkr)}</dd></div>
+            <div><dt className="text-xs text-ink-600">Actual total</dt><dd className="num">{pkr(o.actual_total_pkr)}</dd></div>
             <div>
-              <dt className="text-xs text-ink-500">Settlement</dt>
-              <dd className={cx('font-mono', (o.settlement_delta_pkr ?? 0) < 0 ? 'text-volt-700' : (o.settlement_delta_pkr ?? 0) > 0 ? 'text-red-600' : '')}>
+              <dt className="text-xs text-ink-600">Settlement</dt>
+              <dd className={cx('num', (o.settlement_delta_pkr ?? 0) < 0 ? 'text-volt-700' : (o.settlement_delta_pkr ?? 0) > 0 ? 'text-red-600' : '')}>
                 {o.settlement_delta_pkr == null ? '—' : `${o.settlement_delta_pkr > 0 ? '+' : ''}${pkr(o.settlement_delta_pkr)}`}
               </dd>
             </div>
-            <div><dt className="text-xs text-ink-500">Pack issued</dt><dd><Mono>{o.pack_out_id || '—'}</Mono></dd></div>
-            <div><dt className="text-xs text-ink-500">Pack returned</dt><dd><Mono>{o.pack_in_id || '—'}</Mono></dd></div>
-            {o.delivery_address && <div className="col-span-2"><dt className="text-xs text-ink-500">Delivery to</dt><dd>{o.delivery_address}</dd></div>}
-            {o.receipt_no && <div><dt className="text-xs text-ink-500">Receipt</dt><dd><Mono>{o.receipt_no}</Mono></dd></div>}
-            {o.completed_at && <div><dt className="text-xs text-ink-500">Completed</dt><dd>{dt(o.completed_at)}</dd></div>}
+            <div><dt className="text-xs text-ink-600">Pack issued</dt><dd><Mono>{o.pack_out_id || '—'}</Mono></dd></div>
+            <div><dt className="text-xs text-ink-600">Pack returned</dt><dd><Mono>{o.pack_in_id || '—'}</Mono></dd></div>
+            {o.delivery_address && <div className="col-span-2"><dt className="text-xs text-ink-600">Delivery to</dt><dd>{o.delivery_address}</dd></div>}
+            {o.receipt_no && <div><dt className="text-xs text-ink-600">Receipt</dt><dd><Mono>{o.receipt_no}</Mono></dd></div>}
+            {o.completed_at && <div><dt className="text-xs text-ink-600">Completed</dt><dd>{dt(o.completed_at)}</dd></div>}
           </dl>
           <div className="mt-5 border-t border-ink-100 pt-4">
-            <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-500">Price breakdown</div>
+            <div className="mb-3 text-xs font-medium uppercase tracking-wide text-ink-600">Price breakdown</div>
             <AutoView data={o.price} />
           </div>
         </Card>

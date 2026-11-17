@@ -39,7 +39,7 @@ export default function Audit() {
               { key: 'actor', header: 'Actor', render: (a) => a.actor_name || (a.actor_id ? `#${a.actor_id}` : 'system') },
               { key: 'action', header: 'Action', render: (a) => <Mono>{a.action}</Mono> },
               { key: 'entity', header: 'Entity', render: (a) => <span>{a.entity} <Mono>{a.entity_id || ''}</Mono></span> },
-              { key: 'details', header: 'Details', render: (a) => <span className="block max-w-[340px] truncate font-mono text-xs text-ink-500">{JSON.stringify(a.details)}</span> },
+              { key: 'details', header: 'Details', render: (a) => <span className="block max-w-[340px] truncate font-mono text-xs text-ink-600">{JSON.stringify(a.details)}</span> },
             ]}
           />
         )}

@@ -77,19 +77,19 @@ export default function PublicPlansPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-night text-white flex items-center justify-center p-8">
-        <p className="text-gray-400">Loading subscription plans...</p>
+      <div className="min-h-screen bg-canvas text-ink-900 flex items-center justify-center p-8">
+        <p className="text-ink-600">Loading subscription plans...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-night text-white flex flex-col items-center justify-center p-8 space-y-4 text-center">
-        <p className="text-red-400">{error}</p>
+      <div className="min-h-screen bg-canvas text-ink-900 flex flex-col items-center justify-center p-8 space-y-4 text-center">
+        <p className="text-red-700">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          className="border border-line bg-white text-ink-800 hover:bg-ink-50 px-4 py-2 rounded-xl text-sm font-medium"
         >
           Retry
         </button>
@@ -98,11 +98,11 @@ export default function PublicPlansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-night text-white p-6 md:p-12">
+    <div className="min-h-screen bg-canvas text-ink-900 p-6 md:p-12">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <h1 className="text-4xl font-extrabold tracking-tight">Voltora Locker Passes</h1>
-          <p className="text-gray-400 text-sm md:text-base">
+          <h1 className="text-4xl font-bold">Voltora Locker Passes</h1>
+          <p className="text-ink-600 text-sm md:text-base">
             Subscribe to an instant battery swapping locker pass and keep your fleet moving across Karachi.
           </p>
         </div>
@@ -111,27 +111,27 @@ export default function PublicPlansPage() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="border border-slate-800 bg-slate-900/80 rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-500/50 transition shadow-xl"
+              className="surface rounded-card p-6 flex flex-col justify-between hover:border-volt-500 transition-colors duration-150"
             >
               <div className="space-y-4">
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full inline-block">
+                <span className="text-xs font-medium uppercase tracking-wider text-volt-700 bg-volt-500/10 px-2.5 py-1 rounded-full inline-block">
                   {plan.duration_type}
                 </span>
                 <h2 className="text-2xl font-bold">{plan.name}</h2>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-white">
+                  <span className="text-3xl font-bold text-ink-900">
                     Rs {plan.price_pkr.toLocaleString('en-PK')}
                   </span>
-                  <span className="text-xs text-gray-400">{perPeriod(plan.duration_days)}</span>
+                  <span className="text-xs text-ink-600">{perPeriod(plan.duration_days)}</span>
                 </div>
                 {plan.description && (
-                  <p className="text-sm text-gray-400">{plan.description}</p>
+                  <p className="text-sm text-ink-600">{plan.description}</p>
                 )}
               </div>
 
               <button
                 onClick={() => handleSelectPlan(plan.code)}
-                className="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-md"
+                className="mt-8 w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-3 rounded-xl transition shadow-md"
               >
                 Register to Subscribe
               </button>

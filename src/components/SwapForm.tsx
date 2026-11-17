@@ -147,7 +147,7 @@ export function SwapForm({ homeOnly = false }: { homeOnly?: boolean }) {
                 className={cx('rounded-xl border p-4 text-left transition', v.mode === m.v ? 'border-volt-500 bg-volt-50 ring-2 ring-volt-500/20' : 'border-ink-200 hover:border-ink-300')}
               >
                 <div className="font-medium text-ink-900">{m.t}</div>
-                <div className="mt-1 text-xs text-ink-500">{m.d}</div>
+                <div className="mt-1 text-xs text-ink-600">{m.d}</div>
               </button>
             ))}
           </div>
@@ -198,7 +198,7 @@ export function SwapForm({ homeOnly = false }: { homeOnly?: boolean }) {
           </div>
         </Card>
 
-        <p className="text-xs text-ink-500">
+        <p className="text-xs text-ink-600">
           The swap price depends on the battery's state of health and charge. Return your pack in the same SoH and get 10% off the whole bill.{homeOnly && ' Delivery adds Rs 50 for every km from the station to your address.'} You'll get a bill ID and choose how to pay on the next step.
         </p>
 
@@ -221,7 +221,7 @@ export function SwapForm({ homeOnly = false }: { homeOnly?: boolean }) {
       >
         <div className="space-y-4">
           <div>
-            <div className="text-xs text-ink-500">Bill ID</div>
+            <div className="text-xs text-ink-600">Bill ID</div>
             <code className="break-all font-mono text-sm text-volt-700">{lastRef}</code>
           </div>
           {sub && (
@@ -251,7 +251,7 @@ export function SwapForm({ homeOnly = false }: { homeOnly?: boolean }) {
               />
             </Field>
           )}
-          {!sub && <p className="text-xs text-ink-500">Payment is required immediately. Subscribed riders can pay later.</p>}
+          {!sub && <p className="text-xs text-ink-600">Payment is required immediately. Subscribed riders can pay later.</p>}
         </div>
       </Modal>
     </div>

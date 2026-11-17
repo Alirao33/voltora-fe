@@ -5,10 +5,10 @@ import { num } from '@/lib/format';
 type Pt = { t: number; v: number };
 
 /** Lightweight SVG time-series chart with hover readout. */
-export function LineChart({ points, label, unit = '', color = '#0ec866', height = 160 }: { points: Pt[]; label: string; unit?: string; color?: string; height?: number }) {
+export function LineChart({ points, label, unit = '', color = '#3f7d1a', height = 160 }: { points: Pt[]; label: string; unit?: string; color?: string; height?: number }) {
   const W = 600;
   const H = height;
-  const P = { l: 40, r: 10, t: 12, b: 22 };
+  const P = { l: 48, r: 12, t: 14, b: 28 };
   const [hover, setHover] = useState<number | null>(null);
 
   const geo = useMemo(() => {
@@ -28,21 +28,20 @@ export function LineChart({ points, label, unit = '', color = '#0ec866', height 
     return { pts, min, max, x, y, d, area, t0, t1 };
   }, [points, H]);
 
-  if (!geo) return <div className="flex h-40 items-center justify-center text-sm text-ink-400">No {label.toLowerCase()} data</div>;
+  if (!geo) return <div className="flex h-40 items-center justify-center text-cell text-ink-600">No {label.toLowerCase()} data</div>;
 
   const last = geo.pts[geo.pts.length - 1];
   const shown = hover !== null ? geo.pts[hover] : last;
   const ticks = [geo.min, (geo.min + geo.max) / 2, geo.max];
-  const gid = `g-${label.replace(/\W/g, '')}`;
 
   return (
     <div>
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="text-xs font-medium text-ink-500">{label}</span>
-        <span className="font-mono text-sm font-semibold tabular-nums text-ink-900">
+        <span className="label">{label}</span>
+        <span className="num text-body font-medium text-ink-900">
           {num(shown.v, 2)}
           {unit}
-          <span className="ml-2 text-[11px] font-normal text-ink-400">{new Date(shown.t).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="ml-2 text-xs font-normal text-ink-600">{new Date(shown.t).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}</span>
         </span>
       </div>
       <svg
@@ -61,25 +60,19 @@ export function LineChart({ points, label, unit = '', color = '#0ec866', height 
           setHover(best);
         }}
       >
-        <defs>
-          <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
         {ticks.map((t, i) => (
           <g key={i}>
-            <line x1={P.l} x2={W - P.r} y1={geo.y(t)} y2={geo.y(t)} stroke="#eceef2" />
-            <text x={P.l - 6} y={geo.y(t) + 3} textAnchor="end" fontSize="10" fill="#8694ab">{num(t, 1)}</text>
+            <line x1={P.l} x2={W - P.r} y1={geo.y(t)} y2={geo.y(t)} stroke="#e5e7eb" />
+            <text x={P.l - 6} y={geo.y(t) + 3} textAnchor="end" fontSize="12" fill="#475569">{num(t, 1)}</text>
           </g>
         ))}
-        <text x={P.l} y={H - 6} fontSize="10" fill="#8694ab">{new Date(geo.t0).toLocaleString('en-PK', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</text>
-        <text x={W - P.r} y={H - 6} fontSize="10" fill="#8694ab" textAnchor="end">{new Date(geo.t1).toLocaleString('en-PK', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</text>
-        <path d={geo.area} fill={`url(#${gid})`} />
+        <text x={P.l} y={H - 8} fontSize="12" fill="#475569">{new Date(geo.t0).toLocaleString('en-PK', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</text>
+        <text x={W - P.r} y={H - 8} fontSize="12" fill="#475569" textAnchor="end">{new Date(geo.t1).toLocaleString('en-PK', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</text>
+        <path d={geo.area} fill={color} fillOpacity="0.10" />
         <path d={geo.d} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" />
         {hover !== null && (
           <g>
-            <line x1={geo.x(shown.t)} x2={geo.x(shown.t)} y1={P.t} y2={H - P.b} stroke="#b1bac9" strokeDasharray="3 3" />
+            <line x1={geo.x(shown.t)} x2={geo.x(shown.t)} y1={P.t} y2={H - P.b} stroke="#94a3b8" strokeDasharray="3 3" />
             <circle cx={geo.x(shown.t)} cy={geo.y(shown.v)} r="4" fill="white" stroke={color} strokeWidth="2" />
           </g>
         )}
@@ -91,13 +84,13 @@ export function LineChart({ points, label, unit = '', color = '#0ec866', height 
 /** Small horizontal bar for 0–100 values (SoC, health). */
 export function Meter({ value, max = 100, tone }: { value: number; max?: number; tone?: 'auto' | 'volt' }) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
-  const color = tone === 'volt' ? 'bg-volt-500' : pct >= 60 ? 'bg-volt-500' : pct >= 30 ? 'bg-amber-500' : 'bg-red-500';
+  const color = tone === 'volt' ? 'bg-volt-600' : pct >= 60 ? 'bg-volt-600' : pct >= 30 ? 'bg-amber-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-ink-100">
+      <div className="h-2 w-16 overflow-hidden rounded-full bg-ink-100">
         <div className={`h-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-mono text-xs tabular-nums text-ink-700">{num(value, 0)}</span>
+      <span className="num text-cell text-ink-700">{num(value, 0)}</span>
     </div>
   );
 }

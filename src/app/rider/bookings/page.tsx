@@ -38,27 +38,27 @@ export default function LockerPassPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
           <Card title="Your locker">
             {!cur ? (
-              <div className="py-6 text-center text-sm text-ink-500">
+              <div className="py-6 text-center text-sm text-ink-600">
                 You need an active locker pass first. <Link href="/rider/plans" className="font-medium text-volt-700">Browse plans →</Link>
               </div>
             ) : cur.locker_id ? (
               <div className="space-y-3">
                 <div className="rounded-xl border border-volt-300 bg-volt-50 p-5 text-center">
                   <div className="text-xs font-medium uppercase tracking-wide text-volt-800">Locker ID</div>
-                  <div className="mt-1 font-mono text-3xl font-semibold text-volt-900">{cur.locker_id}</div>
+                  <div className="mt-1 font-mono text-3xl font-bold text-volt-900">{cur.locker_id}</div>
                   <div className="mt-1 text-sm text-volt-800">{cur.station_name || cur.station_id}</div>
                 </div>
-                <p className="text-xs text-ink-500">Your station is set once for this pass, so it can't be changed. {cur.plan_name} ends {dt(cur.ends_at, { dateOnly: true })}.</p>
+                <p className="text-xs text-ink-600">Your station is set once for this pass, so it can't be changed. {cur.plan_name} ends {dt(cur.ends_at, { dateOnly: true })}.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-ink-600">Pick your station. We give you the first free locker there. You can only do this once.</p>
                 <div className="space-y-2">
                   {stations.map((st) => (
-                    <label key={st.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-3 text-sm ${st.free_lockers ? (pick === st.id ? 'border-volt-500 bg-volt-50' : 'border-ink-200 bg-white hover:bg-ink-50') : 'cursor-not-allowed border-ink-100 bg-ink-50 text-ink-400'}`}>
+                    <label key={st.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-3 text-sm ${st.free_lockers ? (pick === st.id ? 'border-volt-500 bg-volt-50' : 'border-ink-200 bg-white hover:bg-ink-50') : 'cursor-not-allowed border-ink-100 bg-ink-50 text-ink-600'}`}>
                       <span className="flex items-center gap-3">
                         <input type="radio" name="station" disabled={!st.free_lockers} checked={pick === st.id} onChange={() => setPick(st.id)} />
-                        <span><b className="text-ink-900">{st.name}</b><span className="block text-xs text-ink-500">{st.address}</span></span>
+                        <span><b className="text-ink-900">{st.name}</b><span className="block text-xs text-ink-600">{st.address}</span></span>
                       </span>
                       <span className="text-xs">{st.free_lockers ? `${st.free_lockers} lockers available` : 'Full'}</span>
                     </label>
@@ -76,12 +76,12 @@ export default function LockerPassPage() {
                   <li key={h.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
                     <div>
                       <div className="font-medium text-ink-900">{h.plan_name}</div>
-                      <div className="text-xs text-ink-500">{dt(h.starts_at, { dateOnly: true })} → {dt(h.ends_at, { dateOnly: true })}</div>
-                      {h.locker_id && <div className="mt-0.5 text-xs text-ink-500">Locker <span className="font-mono">{h.locker_id}</span> · {h.station_name}</div>}
+                      <div className="text-xs text-ink-600">{dt(h.starts_at, { dateOnly: true })} → {dt(h.ends_at, { dateOnly: true })}</div>
+                      {h.locker_id && <div className="mt-0.5 text-xs text-ink-600">Locker <span className="font-mono">{h.locker_id}</span> · {h.station_name}</div>}
                     </div>
                     <div className="text-right">
                       <Badge value={h.status} />
-                      <div className="mt-1 text-xs text-ink-500">{pkr(h.price_pkr)}</div>
+                      <div className="mt-1 text-xs text-ink-600">{pkr(h.price_pkr)}</div>
                     </div>
                   </li>
                 ))}

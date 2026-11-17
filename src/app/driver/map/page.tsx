@@ -34,7 +34,7 @@ export default function DriverMap() {
   const row = (p: Pin) => (
     <li key={p.key}>
       <button type="button" onClick={() => setPicked(p.key)} className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${cur?.key === p.key ? 'bg-volt-50 ring-1 ring-volt-300' : 'hover:bg-ink-50'}`}>
-        <span><b className="text-ink-900">{p.title}</b><span className="block text-xs text-ink-500">{p.sub}</span></span>
+        <span><b className="text-ink-900">{p.title}</b><span className="block text-xs text-ink-600">{p.sub}</span></span>
         <Badge value={p.kind} />
       </button>
     </li>
@@ -49,10 +49,10 @@ export default function DriverMap() {
         <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
           <div className="space-y-6">
             <Card title="Customers to deliver to">
-              {stops.length ? <ul className="space-y-1">{stops.map(row)}</ul> : <p className="text-sm text-ink-500">No delivery stops right now.</p>}
+              {stops.length ? <ul className="space-y-1">{stops.map(row)}</ul> : <p className="text-sm text-ink-600">No delivery stops right now.</p>}
             </Card>
             <Card title="Stations">
-              {places.length ? <ul className="space-y-1">{places.map(row)}</ul> : <p className="text-sm text-ink-500">No stations found.</p>}
+              {places.length ? <ul className="space-y-1">{places.map(row)}</ul> : <p className="text-sm text-ink-600">No stations found.</p>}
             </Card>
           </div>
           <Card title={cur.title} subtitle={cur.sub} actions={

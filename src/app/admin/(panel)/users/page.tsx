@@ -40,7 +40,7 @@ export default function UsersPage() {
         <Toolbar>
           <Field label="Search"><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, username, phone" /></Field>
           <Field label="Role"><Select value={role} onChange={(e) => setRole(e.target.value)} placeholder="All" options={roleOptions} /></Field>
-          <span className="pb-2.5 text-sm text-ink-500">{rows.length} users</span>
+          <span className="pb-2.5 text-sm text-ink-600">{rows.length} users</span>
         </Toolbar>
         <ErrorBox error={error} onRetry={reload} />
         {loading ? <Loading /> : (
@@ -49,7 +49,7 @@ export default function UsersPage() {
             rowKey={(u) => u.id}
             cols={[
               { key: 'id', header: 'ID', render: (u) => <Mono>{u.id}</Mono> },
-              { key: 'name', header: 'Name', render: (u) => <div><div className="font-medium">{u.full_name || '—'}</div><div className="text-xs text-ink-500">{u.username || ''}</div></div> },
+              { key: 'name', header: 'Name', render: (u) => <div><div className="font-medium">{u.full_name || '—'}</div><div className="text-xs text-ink-600">{u.username || ''}</div></div> },
               { key: 'phone', header: 'Phone', render: (u) => u.phone || '—' },
               {
                 key: 'role',

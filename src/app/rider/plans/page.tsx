@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Rider } from '@/lib/endpoints';
+import { usePageTitle } from '@/lib/hooks';
 import { Modal } from '@/components/ui';
 
 interface Plan {
@@ -51,6 +52,7 @@ function normalizePlans(data: unknown): Plan[] {
 }
 
 export default function PlansPage() {
+  usePageTitle('Plans');
   const router = useRouter();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,28 +99,28 @@ const handleSubscribe = (planCode: string) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-night text-white flex items-center justify-center p-8">
-        <p className="text-gray-400">Loading locker pass plans...</p>
+      <div className="min-h-screen bg-canvas text-ink-900 flex items-center justify-center p-8">
+        <p className="text-ink-600">Loading locker pass plans...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-night text-white p-6 md:p-12">
+    <div className="min-h-screen bg-canvas text-ink-900 p-6 md:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Locker Pass Subscriptions</h1>
-            <p className="text-gray-400 mt-2">
+            <h1 className="text-page text-ink-900">Locker Pass Subscriptions</h1>
+            <p className="text-ink-600 mt-2">
               Lock in your station storage access. Battery swaps are ordered online or paid per swap.
             </p>
           </div>
           {current && (
-            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200 space-y-2">
+            <div className="rounded-xl border border-amber-300 bg-status-warning-bg p-4 text-body text-status-warning-fg space-y-2">
               <p>Active subscription until {new Date(current.ends_at).toLocaleDateString('en-PK')}</p>
               <button
                 onClick={() => setConfirmOpen(true)}
-                className="rounded-lg bg-red-500/90 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-semibold"
+                className="rounded-lg border border-line bg-white text-volt-700 hover:bg-volt-50 hover:text-red-700 px-3 py-1.5 text-xs font-medium"
               >
                 Cancel current subscription
               </button>
@@ -133,7 +135,7 @@ const handleSubscribe = (planCode: string) => {
                 <button onClick={() => setConfirmOpen(false)} disabled={cancelling} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50">
                   Keep it
                 </button>
-                <button onClick={handleCancel} disabled={cancelling} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                <button onClick={handleCancel} disabled={cancelling} className="rounded-lg border border-line bg-white px-4 py-2 text-sm font-medium text-volt-700 hover:bg-volt-50 hover:text-red-700 disabled:opacity-50">
                   {cancelling ? 'Cancelling...' : 'Yes, cancel'}
                 </button>
               </>
@@ -144,37 +146,37 @@ const handleSubscribe = (planCode: string) => {
         </div>
 
         {error ? (
-          <p className="text-red-400">{error}</p>
+          <p className="text-red-700">{error}</p>
         ) : plans.length === 0 ? (
-          <p className="text-gray-400">No subscription plans found.</p>
+          <p className="text-ink-600">No subscription plans found.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => (
               <div
                 key={`${plan.id}-${plan.code}`}
-                className="border border-slate-800 bg-slate-900 rounded-2xl p-6 flex flex-col justify-between shadow-xl hover:border-emerald-500/50 transition-all duration-200"
+                className="surface rounded-card p-6 flex flex-col justify-between hover:border-volt-500 transition-colors duration-150"
               >
                 <div className="space-y-4">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                  <span className="text-xs font-medium uppercase tracking-wider text-volt-700">
                     {plan.duration_type}
                   </span>
-                  <h3 className="text-2xl font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold text-ink-900">{plan.name}</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-white">
+                    <span className="text-4xl font-bold text-ink-900">
                       Rs {plan.price_pkr.toLocaleString('en-PK')}
                     </span>
-                    <span className="text-sm text-gray-400">{perPeriod(plan.duration_days)}</span>
+                    <span className="text-sm text-ink-600">{perPeriod(plan.duration_days)}</span>
                   </div>
-                  <ul className="space-y-3 text-sm text-gray-300 pt-4 border-t border-slate-800">
+                  <ul className="space-y-3 text-sm text-ink-700 pt-4 border-t border-line">
                     <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">⚡</span> Station Locker Storage Rights
+                      <span className="text-volt-700">⚡</span> Station Locker Storage Rights
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">⚡</span> Priority Swapping Access
+                      <span className="text-volt-700">⚡</span> Priority Swapping Access
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">⚡</span> Plan Code:{' '}
-                      <code className="text-emerald-400 bg-slate-800 px-2 py-0.5 rounded text-xs">
+                      <span className="text-volt-700">⚡</span> Plan Code:{' '}
+                      <code className="text-volt-700 bg-ink-100 text-ink-800 px-2 py-0.5 rounded text-xs">
                         {plan.code}
                       </code>
                     </li>
@@ -182,7 +184,7 @@ const handleSubscribe = (planCode: string) => {
                 </div>
                 <button
                   onClick={() => handleSubscribe(plan.code)}
-                  className="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition duration-200"
+                  className="mt-8 w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-3 rounded-xl transition duration-200"
                 >
                   Subscribe Now
                 </button>

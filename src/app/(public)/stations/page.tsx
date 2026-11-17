@@ -24,8 +24,8 @@ export default function StationsPage() {
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Stations</h1>
-          <p className="mt-1 text-ink-500">Live stock at every Voltora swap point{pos ? ', nearest first' : ''}.</p>
+          <h1 className="text-page text-ink-900">Stations</h1>
+          <p className="mt-1 text-ink-600">Live stock at every Voltora swap point{pos ? ', nearest first' : ''}.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Search"><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name or area" /></Field>

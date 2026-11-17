@@ -27,11 +27,11 @@ export default function BatteryDetail() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Link href="/admin/batteries" className="text-sm text-ink-500 hover:text-ink-800">← Batteries</Link>
-          <h1 className="mt-1 flex flex-wrap items-center gap-3 text-2xl font-semibold tracking-tight">
+          <Link href="/admin/batteries" className="text-sm text-ink-600 hover:text-ink-800">← Batteries</Link>
+          <h1 className="mt-1 flex flex-wrap items-center gap-3 text-page text-ink-900">
             <span className="font-mono">{b.id}</span> <Badge value={b.state} /> <Badge value={b.health_status} />
           </h1>
-          <p className="text-sm text-ink-500">
+          <p className="text-sm text-ink-600">
             {b.chemistry} · {num(b.rated_capacity_ah)} Ah · {num(b.nominal_voltage)} V nominal · last seen {ago(b.last_seen_at)}
             {b.station_id && <> · at <span className="font-mono">{b.station_id}{b.locker_id ? `/${b.locker_id}` : ''}</span></>}
             {b.van_id && <> · on van #{b.van_id}</>}
@@ -79,7 +79,7 @@ export default function BatteryDetail() {
             ['Supply voltage', b.supply_voltage_v != null ? `${num(b.supply_voltage_v, 1)} V` : '—'],
             ['Last seen', dt(b.last_seen_at)],
           ].map(([k, v]) => (
-            <div key={k}><dt className="text-xs text-ink-500">{k}</dt><dd className="font-mono">{v}</dd></div>
+            <div key={k}><dt className="text-xs text-ink-600">{k}</dt><dd className="num">{v}</dd></div>
           ))}
         </dl>
       </Card>

@@ -114,20 +114,20 @@ function RegisterForm() {
   ];
 
   return (
-    <div className="min-h-screen bg-night text-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-canvas text-ink-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
-        <Link href="/" className="inline-flex items-center gap-2 text-emerald-400 font-bold text-2xl">⚡ Voltora</Link>
-        <h2 className="text-3xl font-extrabold tracking-tight">Create your Rider Account</h2>
-        <p className="text-sm text-gray-400">
-          {selectedPlan ? <>Registration is required to activate pass code: <code className="text-emerald-400 font-mono bg-slate-900 px-2 py-0.5 rounded">{selectedPlan}</code></> : 'Registration is mandatory to purchase locker passes and swap batteries.'}
+        <Link href="/" className="inline-flex items-center gap-2 text-volt-700 font-bold text-2xl">⚡ Voltora</Link>
+        <h2 className="text-3xl font-bold">Create your Rider Account</h2>
+        <p className="text-sm text-ink-600">
+          {selectedPlan ? <>Registration is required to activate pass code: <code className="text-volt-700 font-mono bg-white px-2 py-0.5 rounded">{selectedPlan}</code></> : 'Registration is mandatory to purchase locker passes and swap batteries.'}
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 py-8 px-4 shadow border border-slate-800 sm:rounded-2xl sm:px-10">
+        <div className="surface py-8 px-4 sm:rounded-2xl sm:px-10">
           {problems.length > 0 && (
-            <div role="alert" className="mb-4 bg-red-950/50 border border-red-500/50 text-red-300 px-4 py-3 rounded-xl text-sm">
-              <p className="font-semibold">{problems.length === 1 ? 'Please fix this:' : `Please fix these ${problems.length} things:`}</p>
+            <div role="alert" className="mb-4 bg-status-danger-bg border border-red-200 text-status-danger-fg px-4 py-3 rounded-xl text-sm">
+              <p className="font-medium">{problems.length === 1 ? 'Please fix this:' : `Please fix these ${problems.length} things:`}</p>
               <ul className="mt-1 list-disc pl-5 space-y-0.5">
                 {problems.map((p) => <li key={p}>{p}</li>)}
               </ul>
@@ -139,8 +139,8 @@ function RegisterForm() {
               const err = fieldErrors[field.name];
               return (
                 <div key={field.name}>
-                  <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">
-                    {field.label}{!field.required && <span className="text-gray-500"> (optional)</span>}
+                  <label htmlFor={field.name} className="block text-sm font-medium text-ink-700">
+                    {field.label}{!field.required && <span className="text-ink-600"> (optional)</span>}
                   </label>
                   <input
                     id={field.name}
@@ -153,15 +153,15 @@ function RegisterForm() {
                     placeholder={field.placeholder}
                     aria-invalid={!!err}
                     aria-describedby={err ? `${field.name}-error` : field.name === 'password' ? 'password-rules' : undefined}
-                    className={`mt-1 block w-full rounded-xl bg-slate-800 border text-white px-3 py-2 text-sm focus:outline-none ${err ? 'border-red-500 focus:border-red-400' : 'border-slate-700 focus:border-emerald-500'}`}
+                    className={`mt-1 block w-full rounded-lg bg-white border text-ink-900 px-3 py-2 text-sm focus:outline-none ${err ? 'border-red-500 focus:border-red-400' : 'border-line focus:border-emerald-500'}`}
                   />
-                  {err && <p id={`${field.name}-error`} className="mt-1 text-xs text-red-400">{err}</p>}
+                  {err && <p id={`${field.name}-error`} className="mt-1 text-xs text-red-700">{err}</p>}
                   {field.name === 'password' && (
                     <ul id="password-rules" className="mt-2 space-y-0.5 text-xs" aria-live="polite">
                       {PASSWORD_RULES.map((r) => {
                         const ok = r.test(formData.password);
                         return (
-                          <li key={r.label} className={ok ? 'text-emerald-400' : 'text-gray-400'}>
+                          <li key={r.label} className={ok ? 'text-volt-700' : 'text-ink-600'}>
                             <span aria-hidden="true">{ok ? '✓' : '○'}</span> {r.label}
                             <span className="sr-only">{ok ? ' (met)' : ' (not met)'}</span>
                           </li>
@@ -173,14 +173,14 @@ function RegisterForm() {
               );
             })}
 
-            <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-slate-950 bg-emerald-500 hover:bg-emerald-600 focus:outline-none transition disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-volt-950 bg-volt-500 hover:bg-volt-600 focus:outline-none transition disabled:opacity-50">
               {loading ? 'Creating Account...' : 'Complete Registration'}
             </button>
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-gray-400">Already have an account? </span>
-            <Link href={selectedPlan ? `/login?plan=${encodeURIComponent(selectedPlan)}` : '/login'} className="font-medium text-emerald-400 hover:text-emerald-300">Sign in</Link>
+            <span className="text-ink-600">Already have an account? </span>
+            <Link href={selectedPlan ? `/login?plan=${encodeURIComponent(selectedPlan)}` : '/login'} className="font-medium text-volt-700 hover:text-volt-700">Sign in</Link>
           </div>
         </div>
       </div>
@@ -190,7 +190,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-night text-white p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-canvas text-ink-900 p-8 text-center">Loading...</div>}>
       <RegisterForm />
     </Suspense>
   );

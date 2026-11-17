@@ -1,96 +1,162 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Logo } from './Logo';
 import { useAuth } from './AuthProvider';
+import { BandContext, type BandContent } from './band';
 import { cx } from '@/lib/format';
 
 export type NavItem = { href: string; label: string; icon: ReactNode; exact?: boolean } | { section: string };
 
+/** White sidebar, lime header band (search, bell, avatar, page title) and the page content overlapping the band. */
 export function PanelShell({ nav, children, area, logoutTo = '/login' }: { nav: NavItem[]; children: ReactNode; area: string; logoutTo?: string }) {
   const { user, signOut } = useAuth();
   const path = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [band, setBand] = useState<BandContent | null>(null);
+  const [query, setQuery] = useState('');
+  const ctx = useMemo(() => ({ set: setBand }), []);
   useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    if (!open) return;
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', k);
+    return () => window.removeEventListener('keydown', k);
+  }, [open]);
+
+  const links = nav.filter((n): n is Extract<NavItem, { href: string }> => 'href' in n);
+  const isActive = useCallback((n: { href: string; exact?: boolean }) => (n.exact ? path === n.href : path === n.href || path.startsWith(n.href + '/')), [path]);
+  const activeLabel = links.find(isActive)?.label ?? area;
+  const alertsLink = links.find((l) => l.href.endsWith('/alerts'));
+  const profileLink = links.find((l) => l.href.endsWith('/profile'));
+  const initial = (user?.full_name || user?.username || user?.phone || '?').slice(0, 1).toUpperCase();
+
+  // Jump to the first page whose name matches what was typed.
+  const goSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim().toLowerCase();
+    const hit = q && links.find((l) => l.label.toLowerCase().includes(q));
+    if (hit) {
+      router.push(hit.href);
+      setQuery('');
+    }
+  };
 
   const navEl = (
-    <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4">
-      {nav.map((n, i) =>
-        'section' in n ? (
-          <div key={i} className="mt-4 px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-ink-500 first:mt-0">{n.section}</div>
-        ) : (
+    <nav aria-label="Main" className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
+      {nav.map((n, i) => {
+        if ('section' in n) return <div key={i} className="label mt-5 px-3 pb-1 first:mt-0">{n.section}</div>;
+        const active = isActive(n);
+        return (
           <Link
             key={n.href}
             href={n.href}
+            aria-current={active ? 'page' : undefined}
             className={cx(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-              (n.exact ? path === n.href : path === n.href || path.startsWith(n.href + '/'))
-                ? 'bg-white/10 text-white'
-                : 'text-ink-300 hover:bg-white/5 hover:text-white',
+              'relative flex h-11 items-center gap-3 rounded-[10px] px-3 text-body transition-colors duration-150',
+              active ? 'bg-volt-100 font-medium text-ink-900' : 'text-ink-700 hover:bg-volt-50 hover:text-ink-900',
             )}
           >
-            <span className="h-4 w-4 shrink-0 opacity-80">{n.icon}</span>
+            {active && <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-accent" aria-hidden />}
+            <span className={cx('h-5 w-5 shrink-0 [&>svg]:h-5 [&>svg]:w-5', active ? 'text-volt-700' : 'text-ink-600')}>{n.icon}</span>
             {n.label}
           </Link>
-        ),
-      )}
+        );
+      })}
     </nav>
   );
 
   const userEl = (
-    <div className="border-t border-white/10 p-3">
-      <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-volt-500/20 text-sm font-semibold text-volt-300">
-          {(user?.full_name || user?.username || user?.phone || '?').slice(0, 1).toUpperCase()}
-        </div>
+    <div className="p-3">
+      <div className="flex items-center gap-3 rounded-xl border border-line bg-ink-50 p-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-volt-100 text-body font-medium text-volt-900">{initial}</div>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-white">{user?.full_name || user?.username || user?.phone}</div>
-          <div className="text-[11px] text-ink-400">{user?.role?.toLowerCase()}{user?.is_vip ? ' · VIP' : ''}</div>
+          <div className="truncate text-body font-medium text-ink-900">{user?.full_name || user?.username || user?.phone}</div>
+          <div className="text-sm text-ink-600">{user?.role?.toLowerCase()}{user?.is_vip ? ' · VIP' : ''}</div>
         </div>
         <button
           title="Sign out"
+          aria-label="Sign out"
           onClick={() => { signOut(); router.replace(logoutTo); }}
-          className="rounded-md p-1.5 text-ink-400 hover:bg-white/10 hover:text-white"
+          className="rounded-md p-2 text-ink-600 transition-colors duration-150 hover:bg-white hover:text-red-700"
         >
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7" /></svg>
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7" /></svg>
         </button>
       </div>
     </div>
   );
 
+  const round = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-ink-900 transition-colors duration-150 hover:bg-volt-50';
+
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] lg:flex">
-        <div className="flex h-16 items-center gap-2 px-5">
-          <Logo dark />
-          <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-300">{area}</span>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-white lg:flex">
+        <div className="flex h-16 items-center gap-3 px-5">
+          <Logo />
+          <span className="rounded-md bg-volt-100 px-2 py-1 text-xs font-medium uppercase tracking-wide text-volt-900">{area}</span>
         </div>
         {navEl}
         {userEl}
       </aside>
 
-      {/* mobile */}
-      <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] px-4 lg:hidden">
-        <Logo dark />
-        <button className="rounded-md p-2 text-white" onClick={() => setOpen(true)} aria-label="Menu">
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-        </button>
-      </div>
+      {/* mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/50" />
-          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c]" onClick={(e) => e.stopPropagation()}>
-            <div className="flex h-14 items-center px-5"><Logo dark /></div>
+          <div className="animate-in absolute inset-0 bg-ink-950/40" />
+          <aside role="dialog" aria-modal aria-label="Menu" className="animate-in absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-line bg-white" onClick={(e) => e.stopPropagation()}>
+            <div className="flex h-16 items-center justify-between px-5">
+              <Logo />
+              <button className="flex h-11 w-11 items-center justify-center rounded-md text-ink-600 hover:bg-volt-50" onClick={() => setOpen(false)} aria-label="Close menu">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
             {navEl}
             {userEl}
           </aside>
         </div>
       )}
 
-      <main className="lg:pl-60">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>
+      <main className="lg:pl-64">
+        <BandContext.Provider value={ctx}>
+          <div className="rounded-b-[28px] bg-volt-500">
+            <div className="mx-auto max-w-[1280px] px-4 pb-16 pt-4 sm:px-6 lg:px-8">
+              <div className="flex items-center gap-3">
+                <button className={cx(round, 'lg:hidden')} onClick={() => setOpen(true)} aria-label="Open menu" aria-expanded={open}>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+                </button>
+                <form onSubmit={goSearch} role="search" className="relative min-w-0 max-w-md flex-1">
+                  <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                  <input list="page-list" aria-label="Search pages" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search pages" className="h-11 w-full rounded-full border-0 bg-white pl-11 pr-4 text-body text-ink-900 placeholder:text-ink-600 focus:outline-none focus:ring-2 focus:ring-volt-700" />
+                  <datalist id="page-list">{links.map((l) => <option key={l.href} value={l.label} />)}</datalist>
+                </form>
+                <div className="ml-auto flex items-center gap-2">
+                  {alertsLink && (
+                    <Link href={alertsLink.href} aria-label="Alerts" className={round}>
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4" /></svg>
+                    </Link>
+                  )}
+                  {profileLink ? (
+                    <Link href={profileLink.href} aria-label="My profile" className={cx(round, 'font-medium')}>{initial}</Link>
+                  ) : (
+                    <span className={cx(round, 'font-medium')} aria-hidden>{initial}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="animate-in mt-8 flex flex-wrap items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <h1 className="text-page text-ink-900">{band?.title ?? activeLabel}</h1>
+                  {band?.desc && <p className="mt-1 text-body text-ink-800">{band.desc}</p>}
+                </div>
+                {band?.actions && <div className="flex flex-wrap items-center gap-2">{band.actions}</div>}
+              </div>
+            </div>
+          </div>
+
+          <div key={path} className="animate-in relative mx-auto -mt-10 max-w-[1280px] px-4 pb-10 sm:px-6 lg:px-8">{children}</div>
+        </BandContext.Provider>
       </main>
     </div>
   );

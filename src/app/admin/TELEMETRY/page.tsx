@@ -47,26 +47,26 @@ export default function AdminTelemetryPage() {
   }, []);
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
+    <div className="p-6 bg-white min-h-screen text-ink-900">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2 text-emerald-400">
+          <h1 className="text-page flex items-center gap-2 text-ink-900">
             <span>⚡</span> VOLTORA Operations & Telemetry Monitor
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-ink-600">
             Real-time battery pack analytics & thermal safety lockout
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs font-medium text-emerald-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <div className="flex items-center gap-2 bg-ink-100/80 border border-line/60 px-3 py-1.5 rounded-full text-xs font-medium text-volt-700">
+          <span className="w-2 h-2 rounded-full bg-volt-500 animate-pulse"></span>
           Live Ingestion Active
         </div>
       </div>
 
       {loading ? (
-        <p className="text-slate-400">Connecting to telemetry stream...</p>
+        <p className="text-ink-600">Connecting to telemetry stream...</p>
       ) : readings.length === 0 ? (
-        <div className="p-4 bg-slate-800/50 rounded-lg text-slate-400 border border-slate-700/40">
+        <div className="p-4 bg-ink-100/50 rounded-lg text-ink-600 border border-line/40">
           No live telemetry stream detected. Start backend telemetry ingestion to populate real-time data.
         </div>
       ) : (
@@ -81,43 +81,43 @@ export default function AdminTelemetryPage() {
                 className={`p-4 rounded-xl border transition-all ${
                   isOverheated
                     ? 'bg-red-950/40 border-red-500/50 shadow-lg shadow-red-500/10'
-                    : 'bg-slate-800/60 border-slate-700/60 hover:border-slate-600'
+                    : 'bg-ink-100/60 border-line/60 hover:border-ink-300'
                 }`}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-ink-600">
                       {item.station_id} • {slotName}
                     </span>
-                    <h3 className="font-semibold text-base text-slate-200">{batteryId}</h3>
+                    <h3 className="font-medium text-base text-ink-800">{batteryId}</h3>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded font-mono ${
                     isOverheated
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      ? 'bg-red-500/20 text-red-700 border border-red-500/30'
+                      : 'bg-volt-500/10 text-volt-700 border border-volt-200'
                   }`}>
                     {item.status}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-slate-900/60 p-2 rounded">
-                    <span className="text-slate-400 block">State of Charge</span>
-                    <span className="font-semibold text-emerald-400 text-sm">{item.soc}%</span>
+                  <div className="bg-white/60 p-2 rounded">
+                    <span className="text-ink-600 block">State of Charge</span>
+                    <span className="font-medium text-volt-700 text-sm">{item.soc}%</span>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded">
-                    <span className="text-slate-400 block">Temperature</span>
-                    <span className={`font-semibold text-sm ${isOverheated ? 'text-red-400 font-bold' : 'text-slate-200'}`}>
+                  <div className="bg-white/60 p-2 rounded">
+                    <span className="text-ink-600 block">Temperature</span>
+                    <span className={`font-medium text-sm ${isOverheated ? 'text-red-700 font-medium' : 'text-ink-800'}`}>
                       {item.temperature_c}°C
                     </span>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded">
-                    <span className="text-slate-400 block">Voltage</span>
-                    <span className="font-semibold text-slate-200 text-sm">{item.voltage} V</span>
+                  <div className="bg-white/60 p-2 rounded">
+                    <span className="text-ink-600 block">Voltage</span>
+                    <span className="font-medium text-ink-800 text-sm">{item.voltage} V</span>
                   </div>
-                  <div className="bg-slate-900/60 p-2 rounded">
-                    <span className="text-slate-400 block">Health (SoH)</span>
-                    <span className="font-semibold text-slate-200 text-sm">{item.soh}%</span>
+                  <div className="bg-white/60 p-2 rounded">
+                    <span className="text-ink-600 block">Health (SoH)</span>
+                    <span className="font-medium text-ink-800 text-sm">{item.soh}%</span>
                   </div>
                 </div>
               </div>

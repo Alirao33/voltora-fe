@@ -60,15 +60,15 @@ export function OrderChat({ orderId, side }: { orderId: number; side: 'RIDER' | 
   return (
     <div className="space-y-3">
       <div className="h-64 space-y-2 overflow-y-auto rounded-xl border border-ink-100 bg-ink-50/60 p-3">
-        {msgs.length === 0 && <p className="py-8 text-center text-sm text-ink-400">No messages yet. Say hello and share where to meet.</p>}
+        {msgs.length === 0 && <p className="py-8 text-center text-sm text-ink-600">No messages yet. Say hello and share where to meet.</p>}
         {msgs.map((m) => {
           const mine = m.sender_role === side;
           return (
             <div key={m.id} className={cx('flex', mine ? 'justify-end' : 'justify-start')}>
               <div className={cx('max-w-[80%] rounded-2xl px-3 py-2 text-sm', mine ? 'bg-volt-500 text-volt-950' : 'bg-white text-ink-900 shadow-sm ring-1 ring-ink-100')}>
-                {!mine && <div className="text-[11px] font-semibold text-ink-500">{m.sender_name}</div>}
+                {!mine && <div className="text-xs font-medium text-ink-600">{m.sender_name}</div>}
                 <div className="whitespace-pre-wrap break-words">{m.body}</div>
-                <div className={cx('mt-0.5 text-right text-[10px]', mine ? 'text-volt-900/60' : 'text-ink-400')}>
+                <div className={cx('mt-0.5 text-right text-xs', mine ? 'text-volt-900/60' : 'text-ink-600')}>
                   {new Date(m.created_at).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
@@ -78,7 +78,7 @@ export function OrderChat({ orderId, side }: { orderId: number; side: 'RIDER' | 
         <div ref={end} />
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
-      {closed ? <p className="text-center text-xs text-ink-500">This chat is closed because the order is finished.</p> : (
+      {closed ? <p className="text-center text-xs text-ink-600">This chat is closed because the order is finished.</p> : (
         <>
         <div className="flex flex-wrap gap-2">
           {QUICK[side].map((q) => (

@@ -25,7 +25,7 @@ export default function Profile() {
         <dl className="divide-y divide-ink-100">
           {rows.map(([k, v]) => (
             <div key={k} className="flex items-center justify-between py-3 text-sm">
-              <dt className="text-ink-500">{k}</dt>
+              <dt className="text-ink-600">{k}</dt>
               <dd className="font-medium text-ink-900">{v}</dd>
             </div>
           ))}

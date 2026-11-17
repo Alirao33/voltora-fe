@@ -97,14 +97,14 @@ export default function PricingPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {RATES.map((r) => (
             <div key={r.key} className="rounded-xl border border-ink-200 bg-white p-4">
-              <div className="text-sm font-semibold text-ink-900">{r.label}</div>
+              <div className="text-sm font-medium text-ink-900">{r.label}</div>
               <div className="mt-3 flex items-center gap-2">
                 <Button size="sm" variant="secondary" onClick={() => setN(r.key, String(Math.max(0, Math.round(((cfg[r.key] as number) - r.step) * 100) / 100)))}>−</Button>
                 <Input type="number" step="any" min={0} value={cfg[r.key] as any} onChange={(e) => setN(r.key, e.target.value)} />
                 <Button size="sm" variant="secondary" onClick={() => setN(r.key, String(Math.round(((cfg[r.key] as number) + r.step) * 100) / 100))}>+</Button>
               </div>
-              <div className="mt-2 text-xs text-ink-500">{r.unit}</div>
-              <div className="text-xs text-ink-400">{r.hint}</div>
+              <div className="mt-2 text-xs text-ink-600">{r.unit}</div>
+              <div className="text-xs text-ink-600">{r.hint}</div>
             </div>
           ))}
         </div>
@@ -133,9 +133,9 @@ export default function PricingPage() {
           return (
             <div className="mt-5 grid gap-6 border-t border-ink-100 pt-4 md:grid-cols-[1fr_auto]">
               <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm lg:grid-cols-3">
-                {rows.map(([k, v]) => (<div key={k}><dt className="text-xs text-ink-500">{k}</dt><dd className="font-mono font-medium text-ink-900">{v}</dd></div>))}
+                {rows.map(([k, v]) => (<div key={k}><dt className="text-xs text-ink-600">{k}</dt><dd className="num font-medium text-ink-900">{v}</dd></div>))}
               </dl>
-              <div className="text-right"><div className="text-xs text-ink-500">Swap price (incl. {Math.round(cfg.margin * 100)}% margin × demand {x.demand})</div><div className="font-mono text-3xl font-semibold">{pkr(x.total)}</div></div>
+              <div className="text-right"><div className="text-xs text-ink-600">Swap price (incl. {Math.round(cfg.margin * 100)}% margin × demand {x.demand})</div><div className="font-mono text-3xl font-bold">{pkr(x.total)}</div></div>
             </div>
           );
         })()}
@@ -163,9 +163,9 @@ export default function PricingPage() {
               {cfg.peak_hours_pkt.map(([a, b], i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Input type="number" min={0} max={24} value={a} className="w-24" onChange={(e) => { const p = [...cfg.peak_hours_pkt]; p[i] = [Number(e.target.value), b]; setCfg({ ...cfg, peak_hours_pkt: p }); }} />
-                  <span className="text-ink-400">→</span>
+                  <span className="text-ink-600">→</span>
                   <Input type="number" min={0} max={24} value={b} className="w-24" onChange={(e) => { const p = [...cfg.peak_hours_pkt]; p[i] = [a, Number(e.target.value)]; setCfg({ ...cfg, peak_hours_pkt: p }); }} />
-                  <span className="text-sm text-ink-500">{String(a).padStart(2, '0')}:00 – {String(b).padStart(2, '0')}:00</span>
+                  <span className="text-sm text-ink-600">{String(a).padStart(2, '0')}:00 – {String(b).padStart(2, '0')}:00</span>
                   <Button size="sm" variant="ghost" onClick={() => setCfg({ ...cfg, peak_hours_pkt: cfg.peak_hours_pkt.filter((_, j) => j !== i) })}>Remove</Button>
                 </div>
               ))}
@@ -174,7 +174,7 @@ export default function PricingPage() {
                   <div key={h} title={`${h}:00`} className={`flex-1 border-r border-white ${cfg.peak_hours_pkt.some(([a, b]) => h >= a && h < b) ? 'bg-amber-400' : 'bg-ink-100'}`} />
                 ))}
               </div>
-              <div className="flex justify-between text-[10px] text-ink-400"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+              <div className="flex justify-between text-xs text-ink-600"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
             </div>
           </Card>
         </div>
@@ -195,7 +195,7 @@ export default function PricingPage() {
             }}>Quote</Button>
             {quote && (
               <div className="mt-5 border-t border-ink-100 pt-4">
-                <div className="mb-3 font-mono text-3xl font-semibold">{pkr(quoteTotal(quote))}</div>
+                <div className="mb-3 num text-stat">{pkr(quoteTotal(quote))}</div>
                 <AutoView data={quote} />
               </div>
             )}

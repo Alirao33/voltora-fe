@@ -30,17 +30,17 @@ export default function BookingDetail() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/rider/bookings" className="text-sm text-ink-500 hover:text-ink-800">← Bookings</Link>
-        <h1 className="mt-1 flex items-center gap-3 text-2xl font-semibold tracking-tight">
+        <Link href="/rider/bookings" className="text-sm text-ink-600 hover:text-ink-800">← Bookings</Link>
+        <h1 className="mt-1 flex items-center gap-3 text-page text-ink-900">
           Booking <span className="font-mono">{bookingId}</span> {status && <Badge value={status} />}
         </h1>
       </div>
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <div className="space-y-6">
           {unlockCode && (
-            <div className="rounded-2xl bg-ink-950 p-6 text-white">
-              <div className="text-xs uppercase tracking-widest text-ink-400">Unlock code</div>
-              <div className="mt-2 font-mono text-4xl font-semibold tracking-[0.3em] text-volt-400">{unlockCode}</div>
+            <div className="rounded-card border border-volt-300 bg-volt-50 p-6 text-ink-900">
+              <div className="label !text-volt-800">Unlock code</div>
+              <div className="num mt-2 text-4xl font-bold tracking-[0.3em] text-volt-900">{unlockCode}</div>
             </div>
           )}
           <Card title="Actions">

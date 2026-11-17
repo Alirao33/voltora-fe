@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, asList } from '@/lib/api';
 import { Rider } from '@/lib/endpoints';
+import { usePageTitle } from '@/lib/hooks';
 import { Modal } from '@/components/ui';
 import type { PaymentMethod } from '@/lib/types';
 import { authorizeOrThrow, maybePaidHint, newPaymentReference, shouldRotateReference } from '@/lib/mockGateway';
@@ -19,6 +20,7 @@ interface Plan {
 }
 
 function CheckoutForm() {
+  usePageTitle('Confirm subscription');
   const router = useRouter();
   const searchParams = useSearchParams();
   const planCode = searchParams.get('plan');
@@ -111,19 +113,19 @@ function CheckoutForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-night text-white flex items-center justify-center p-8">
-        <p className="text-gray-400">Loading subscription summary...</p>
+      <div className="min-h-screen bg-canvas text-ink-900 flex items-center justify-center p-8">
+        <p className="text-ink-600">Loading subscription summary...</p>
       </div>
     );
   }
 
   if (error || !plan) {
     return (
-      <div className="min-h-screen bg-night text-white flex flex-col items-center justify-center p-8 space-y-4 text-center">
-        <p className="text-red-400">{error || 'Invalid subscription request.'}</p>
+      <div className="min-h-screen bg-canvas text-ink-900 flex flex-col items-center justify-center p-8 space-y-4 text-center">
+        <p className="text-red-700">{error || 'Invalid subscription request.'}</p>
         <button
           onClick={() => router.push('/rider/plans')}
-          className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          className="border border-line bg-white text-ink-800 hover:bg-ink-50 px-4 py-2 rounded-xl text-sm font-medium"
         >
           Return to Plans
         </button>
@@ -132,44 +134,44 @@ function CheckoutForm() {
   }
 
   return (
-    <div className="min-h-screen bg-night text-white p-6 md:p-12">
+    <div className="min-h-screen bg-canvas text-ink-900 p-6 md:p-12">
       <div className="max-w-xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Confirm Subscription</h1>
-          <p className="text-gray-400 mt-2">
+          <h1 className="text-page text-ink-900">Confirm Subscription</h1>
+          <p className="text-ink-600 mt-2">
             Review your Locker Pass details before activating station storage access.
           </p>
         </div>
 
-        <div className="border border-slate-800 bg-slate-900 rounded-2xl p-6 space-y-6 shadow-xl">
-          <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+        <div className="surface rounded-2xl p-6 space-y-6 shadow-xl">
+          <div className="flex justify-between items-start border-b border-line pb-4">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+              <span className="text-xs font-medium uppercase tracking-wider text-volt-700">
                 {plan.duration_type}
               </span>
-              <h2 className="text-2xl font-bold text-white mt-1">{plan.name}</h2>
-              <p className="text-xs text-gray-400 mt-1">Code: {plan.code}</p>
+              <h2 className="text-2xl font-bold text-ink-900 mt-1">{plan.name}</h2>
+              <p className="text-xs text-ink-600 mt-1">Code: {plan.code}</p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-extrabold text-white">
+              <span className="text-2xl font-bold text-ink-900">
                 Rs {plan.price_pkr.toLocaleString('en-PK')}
               </span>
-              <p className="text-xs text-gray-400">{perPeriod(plan.duration_days)}</p>
+              <p className="text-xs text-ink-600">{perPeriod(plan.duration_days)}</p>
             </div>
           </div>
 
-          <ul className="space-y-3 text-sm text-gray-300">
+          <ul className="space-y-3 text-sm text-ink-700">
             <li className="flex items-center gap-2">⚡ Unlimited station locker access rights</li>
             <li className="flex items-center gap-2">⚡ Priority swapping queue priority</li>
             <li className="flex items-center gap-2">⚡ Linked directly to your registered rider profile</li>
           </ul>
 
           {current && (
-            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200 flex items-center justify-between gap-3">
+            <div className="rounded-xl border border-amber-300 bg-status-warning-bg p-4 text-body text-status-warning-fg flex items-center justify-between gap-3">
               <span>You have an active subscription until {new Date(current.ends_at).toLocaleDateString('en-PK')}.</span>
               <button
                 onClick={() => setConfirmOpen(true)}
-                className="shrink-0 rounded-lg bg-red-500/90 hover:bg-red-500 text-white px-3 py-1.5 text-xs font-semibold"
+                className="shrink-0 rounded-lg border border-line bg-white text-volt-700 hover:bg-volt-50 hover:text-red-700 px-3 py-1.5 text-xs font-medium"
               >
                 Cancel subscription
               </button>
@@ -184,7 +186,7 @@ function CheckoutForm() {
                 <button onClick={() => setConfirmOpen(false)} disabled={cancelling} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50">
                   Keep it
                 </button>
-                <button onClick={handleCancel} disabled={cancelling} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                <button onClick={handleCancel} disabled={cancelling} className="rounded-lg border border-line bg-white px-4 py-2 text-sm font-medium text-volt-700 hover:bg-volt-50 hover:text-red-700 disabled:opacity-50">
                   {cancelling ? 'Cancelling...' : 'Yes, cancel'}
                 </button>
               </>
@@ -193,10 +195,10 @@ function CheckoutForm() {
             <p className="text-sm text-ink-700">Your current subscription will end immediately. No refund is issued.</p>
           </Modal>
 
-          <div className="grid gap-3 sm:grid-cols-2 border-t border-slate-800 pt-4">
-            <label className="text-xs text-gray-400 space-y-1">
+          <div className="grid gap-3 sm:grid-cols-2 border-t border-line pt-4">
+            <label className="text-xs text-ink-600 space-y-1">
               <span>Payment method</span>
-              <select value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)} className="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white">
+              <select value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)} className="w-full rounded-xl bg-ink-100 border border-line px-3 py-2 text-sm text-ink-900">
                 <option value="RAAST">Raast</option>
                 <option value="WALLET">Mobile wallet</option>
                 <option value="CARD">Card</option>
@@ -205,19 +207,19 @@ function CheckoutForm() {
           </div>
 
           {lastRef && (
-            <p className="text-sm text-gray-400">
-              Bill code: <code className="font-mono text-emerald-300 break-all">{lastRef}</code>
-              <span className="block text-xs text-gray-500 mt-1">Click Activate Pass again to pay and start your subscription.</span>
+            <p className="text-sm text-ink-600">
+              Bill code: <code className="font-mono text-volt-700 break-all">{lastRef}</code>
+              <span className="block text-xs text-ink-600 mt-1">Click Activate Pass again to pay and start your subscription.</span>
             </p>
           )}
-          <Modal open={!!payError && !confirmOpen} onClose={() => setPayError(null)} title="Payment not completed" footer={<button onClick={() => setPayError(null)} className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950">OK</button>}>
+          <Modal open={!!payError && !confirmOpen} onClose={() => setPayError(null)} title="Payment not completed" footer={<button onClick={() => setPayError(null)} className="rounded-lg bg-volt-500 px-4 py-2 text-sm font-medium text-volt-950">OK</button>}>
             <p className="text-sm text-ink-700">{payError}</p>
           </Modal>
 
           <button
             onClick={handleConfirmSubscription}
             disabled={submitting}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl transition disabled:opacity-50"
+            className="w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-3.5 rounded-xl transition disabled:opacity-50"
           >
             {submitting
               ? 'Processing payment...'
@@ -231,7 +233,7 @@ function CheckoutForm() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-night text-white p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-canvas text-ink-900 p-8 text-center">Loading...</div>}>
       <CheckoutForm />
     </Suspense>
   );

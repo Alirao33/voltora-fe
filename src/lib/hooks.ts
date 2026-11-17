@@ -87,3 +87,10 @@ export function useRecentBookings() {
   };
   return { ids, add };
 }
+
+/** Sets the browser tab title for pages that do not use PageHeader. */
+export function usePageTitle(title: string) {
+  useEffect(() => {
+    document.title = `${title} · Voltora`;
+  }, [title]);
+}

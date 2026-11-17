@@ -71,7 +71,7 @@ function LoginInner() {
 
   return (
     <AuthLayout title="Welcome back" subtitle={portal === 'RIDER' ? 'Good to see you. Sign in to swap, track orders and manage your pass.' : 'Ready for the road? Sign in to see your deliveries.'}>
-      <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl bg-white/70 p-1.5 shadow-card ring-1 ring-ink-100 backdrop-blur" role="tablist" aria-label="Sign in as">
+      <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl border border-line bg-white p-1.5" role="tablist" aria-label="Sign in as">
         {([['RIDER', 'I am a rider'], ['DRIVER', 'I am a delivery man']] as const).map(([v, label]) => (
           <button
             key={v}
@@ -79,7 +79,7 @@ function LoginInner() {
             role="tab"
             aria-selected={portal === v}
             onClick={() => setPortal(v)}
-            className={cx('rounded-xl px-3 py-2.5 text-sm font-semibold transition', portal === v ? 'bg-volt-500 text-volt-950 shadow' : 'text-ink-600 hover:bg-white')}
+            className={cx('rounded-xl px-3 py-2.5 text-sm font-medium transition', portal === v ? 'bg-volt-500 text-volt-950 shadow' : 'text-ink-600 hover:bg-white')}
           >
             {label}
           </button>
@@ -95,7 +95,7 @@ function LoginInner() {
           <Field label="Password">
             <div className="relative w-full">
               <Input type={showPassword ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required className="pr-16" />
-              <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-500 hover:text-volt-700 focus:outline-none focus-visible:underline">
+              <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-600 hover:text-volt-700 focus:outline-none focus-visible:underline">
                 {showPassword ? 'HIDE' : 'SHOW'}
               </button>
             </div>
@@ -122,13 +122,13 @@ function LoginInner() {
             <Input value={name} onChange={e => setName(e.target.value)} maxLength={120} />
           </Field>
           <Button type="submit" className="w-full" loading={busy}>Verify &amp; sign in</Button>
-          <button type="button" className="w-full text-center text-sm text-ink-500 hover:text-ink-800" onClick={() => { setOtpSent(null); setCode(''); }}>
+          <button type="button" className="w-full text-center text-sm text-ink-600 hover:text-ink-800" onClick={() => { setOtpSent(null); setCode(''); }}>
             Use a different number
           </button>
         </form>
       )}
 
-      <div className="mt-8 space-y-2 text-center text-sm text-ink-500">
+      <div className="mt-8 space-y-2 text-center text-sm text-ink-600">
         {portal === 'RIDER'
           ? <p>New here? <Link href="/register" className="font-medium text-volt-700">Create an account</Link></p>
           : <p>Delivery man accounts are set up by your operator. Ask them if you can't sign in.</p>}

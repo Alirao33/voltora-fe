@@ -66,18 +66,18 @@ export function AdminOrdersView({ homeOnly = false }: { homeOnly?: boolean }) {
       <Modal open={!!open} onClose={() => setOpen(null)} title={<span className="flex items-center gap-2"><span className="font-mono">{open?.order_id}</span> {open && <Badge value={open.status} />}</span>} wide>
         {open && (
           <div className="space-y-5">
-            <p className="text-sm text-ink-500">Created {dt(open.created_at)}{open.completed_at && <> · completed {dt(open.completed_at)}</>}</p>
+            <p className="text-sm text-ink-600">Created {dt(open.created_at)}{open.completed_at && <> · completed {dt(open.completed_at)}</>}</p>
             {open.mode === 'HOME' && (
               <div className="rounded-lg border border-ink-100 p-4">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">Delivery man</div>
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-600">Delivery man</div>
                 {open.driver_name ? (
                   <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
-                    <div><dt className="text-xs text-ink-500">Name</dt><dd className="font-medium text-ink-900">{open.driver_name}</dd></div>
-                    <div><dt className="text-xs text-ink-500">Phone</dt><dd className="font-mono text-ink-900">{open.driver_phone || '—'}</dd></div>
-                    <div><dt className="text-xs text-ink-500">Van</dt><dd className="text-ink-900">{open.van_name || '—'}</dd></div>
+                    <div><dt className="text-xs text-ink-600">Name</dt><dd className="font-medium text-ink-900">{open.driver_name}</dd></div>
+                    <div><dt className="text-xs text-ink-600">Phone</dt><dd className="font-mono text-ink-900">{open.driver_phone || '—'}</dd></div>
+                    <div><dt className="text-xs text-ink-600">Van</dt><dd className="text-ink-900">{open.van_name || '—'}</dd></div>
                   </dl>
-                ) : <p className="text-sm text-ink-500">{open.status === 'AWAITING_APPROVAL' ? 'A delivery man is assigned once you approve this order.' : 'No delivery man assigned.'}</p>}
-                {open.delivery_address && <p className="mt-3 text-sm text-ink-600"><span className="text-xs text-ink-500">Deliver to: </span>{open.delivery_address}</p>}
+                ) : <p className="text-sm text-ink-600">{open.status === 'AWAITING_APPROVAL' ? 'A delivery man is assigned once you approve this order.' : 'No delivery man assigned.'}</p>}
+                {open.delivery_address && <p className="mt-3 text-sm text-ink-600"><span className="text-xs text-ink-600">Deliver to: </span>{open.delivery_address}</p>}
               </div>
             )}
             {open.status === 'AWAITING_APPROVAL' && (
@@ -91,7 +91,7 @@ export function AdminOrdersView({ homeOnly = false }: { homeOnly?: boolean }) {
             )}
             <AutoView data={{ ...open, price: undefined }} />
             <div className="rounded-lg border border-ink-100 p-4">
-              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">Price breakdown</div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-600">Price breakdown</div>
               <AutoView data={open.price} />
             </div>
           </div>

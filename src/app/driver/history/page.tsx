@@ -45,14 +45,14 @@ export default function DriverHistory() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate font-medium text-ink-900">{nameOf(t)}</span>
-                      {t.order_ref && <span className="font-mono text-xs text-ink-400">{t.order_ref}</span>}
+                      {t.order_ref && <span className="font-mono text-xs text-ink-600">{t.order_ref}</span>}
                     </div>
-                    <div className="truncate text-xs text-ink-500">{t.confirmed_at ? dt(t.confirmed_at) : '—'}{t.kind === 'DELIVERY' && t.address ? ` · ${t.address}` : ''}</div>
+                    <div className="truncate text-xs text-ink-600">{t.confirmed_at ? dt(t.confirmed_at) : '—'}{t.kind === 'DELIVERY' && t.address ? ` · ${t.address}` : ''}</div>
                   </div>
                   {t.kind === 'DELIVERY' ? (
                     <div className="shrink-0 text-right">
-                      <div className="font-mono text-sm font-semibold text-ink-900">{pkr(t.order_total_pkr)}</div>
-                      <div className="text-xs text-ink-500">{km(t.delivery_km)}{t.delivery_charge_pkr != null ? ` · +${pkr(t.delivery_charge_pkr)}` : ''}</div>
+                      <div className="num text-cell font-medium text-ink-900">{pkr(t.order_total_pkr)}</div>
+                      <div className="text-xs text-ink-600">{km(t.delivery_km)}{t.delivery_charge_pkr != null ? ` · +${pkr(t.delivery_charge_pkr)}` : ''}</div>
                     </div>
                   ) : <Badge value={t.kind} />}
                   <span className="text-ink-300">›</span>
@@ -67,16 +67,16 @@ export default function DriverHistory() {
         {open && (open.kind === 'DELIVERY' ? (
           <div className="space-y-4">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <div className="col-span-2"><dt className="text-xs text-ink-500">Delivered to</dt><dd className="text-ink-900">{open.address || '—'}</dd></div>
-              <div><dt className="text-xs text-ink-500">Completed</dt><dd className="text-ink-900">{open.confirmed_at ? dt(open.confirmed_at) : '—'}</dd></div>
-              <div><dt className="text-xs text-ink-500">From station</dt><dd className="text-ink-900">{open.station_label || '—'}</dd></div>
-              <div><dt className="text-xs text-ink-500">Distance</dt><dd className="font-medium text-ink-900">{km(open.delivery_km)}</dd></div>
+              <div className="col-span-2"><dt className="text-xs text-ink-600">Delivered to</dt><dd className="text-ink-900">{open.address || '—'}</dd></div>
+              <div><dt className="text-xs text-ink-600">Completed</dt><dd className="text-ink-900">{open.confirmed_at ? dt(open.confirmed_at) : '—'}</dd></div>
+              <div><dt className="text-xs text-ink-600">From station</dt><dd className="text-ink-900">{open.station_label || '—'}</dd></div>
+              <div><dt className="text-xs text-ink-600">Distance</dt><dd className="font-medium text-ink-900">{km(open.delivery_km)}</dd></div>
               <div>
-                <dt className="text-xs text-ink-500">Delivery charge (Rs 50/km)</dt>
-                <dd className="font-mono text-ink-900">{open.delivery_charge_pkr == null ? <span className="font-sans text-xs text-ink-500">Not billed (placed before the per-km charge)</span> : pkr(open.delivery_charge_pkr)}</dd>
+                <dt className="text-xs text-ink-600">Delivery charge (Rs 50/km)</dt>
+                <dd className="num text-ink-900">{open.delivery_charge_pkr == null ? <span className="font-sans text-xs text-ink-600">Not billed (placed before the per-km charge)</span> : pkr(open.delivery_charge_pkr)}</dd>
               </div>
-              <div><dt className="text-xs text-ink-500">Order total</dt><dd className="font-mono font-semibold text-ink-900">{pkr(open.order_total_pkr)}</dd></div>
-              <div><dt className="text-xs text-ink-500">Payment</dt><dd className="text-ink-900">{open.payment_note || '—'}</dd></div>
+              <div><dt className="text-xs text-ink-600">Order total</dt><dd className="num font-medium text-ink-900">{pkr(open.order_total_pkr)}</dd></div>
+              <div><dt className="text-xs text-ink-600">Payment</dt><dd className="text-ink-900">{open.payment_note || '—'}</dd></div>
             </dl>
             {open.latitude != null && open.longitude != null && (
               <a className="inline-block text-sm font-medium text-volt-700 underline" target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${open.latitude},${open.longitude}`}>Open delivery location</a>

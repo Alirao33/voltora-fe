@@ -85,12 +85,12 @@ export function RequireAuth({ roles, loginPath = '/login', children }: { roles?:
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="max-w-sm rounded-xl border border-ink-200 bg-white p-6 text-center shadow-card">
-          <h1 className="text-lg font-semibold text-ink-900">No access</h1>
+          <h1 className="text-lg font-medium text-ink-900">No access</h1>
           <p className="mt-2 text-sm text-ink-600">
             You're signed in as <b>{user.username || user.phone}</b> ({user.role.toLowerCase()}), which can't open this area.
           </p>
           <div className="mt-4 flex justify-center gap-2">
-            <a href={homeFor(user)} className="rounded-lg bg-ink-900 px-3 py-2 text-sm font-medium text-white">Go to my dashboard</a>
+            <a href={homeFor(user)} className="rounded-lg bg-volt-500 px-3 py-2 text-sm font-medium text-volt-950 hover:bg-volt-600">Go to my dashboard</a>
           </div>
         </div>
       </div>

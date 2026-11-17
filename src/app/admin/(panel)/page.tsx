@@ -2,17 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Modal } from '@/components/ui';
+import { Admin } from '@/lib/endpoints';
+import { useApi } from '@/lib/hooks';
+import { OrdersTable } from '@/components/OrdersTable';
+import { Button, Card, ErrorBox, Field, Input, Loading, Modal, PageHeader, Skeleton, Stat } from '@/components/ui';
 
 export default function AdminDashboard() {
   const [overview, setOverview] = useState<any>(null);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
   const [riderIdToSuspend, setRiderIdToSuspend] = useState('RIDER-102');
   const [orderToReview, setOrderToReview] = useState('');
   const [reviewed, setReviewed] = useState(false); // once an order is reviewed its card leaves the overview
   const [notice, setNotice] = useState<{ title: string; text: string } | null>(null);
+  const recent = useApi(() => Admin.orders({ limit: 6 }), []);
 
   useEffect(() => {
-    api<any>('/api/admin/analytics/overview').then(setOverview).catch(() => {});
+    api<any>('/api/admin/analytics/overview').then(setOverview).catch((e) => setOverviewError(e?.message || 'Could not load the overview numbers.'));
   }, []);
 
   const handleUpdateRiderStatus = async (status: string) => {
@@ -30,103 +35,65 @@ export default function AdminDashboard() {
       await api<any>(`/api/admin/orders/${encodeURIComponent(id)}/review`, { method: 'POST', body: { action, reason: 'Admin Order Audit' } });
       setNotice({ title: 'Order reviewed', text: action === 'APPROVE' ? 'The order was approved.' : 'The order was rejected.' });
       setReviewed(true);
+      recent.reload();
     } catch (e: any) {
       setNotice({ title: 'Could not review order', text: e?.message || 'Something went wrong.' });
     }
   };
 
+  const num = (v: unknown, render: (n: any) => string = String) => (overview ? (v == null ? '—' : render(v)) : <Skeleton className="h-8 w-24" />);
+
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8 text-white">
-      <div className="border-b border-slate-800 pb-5">
-        <h1 className="text-3xl font-bold tracking-tight">Voltora Admin Central</h1>
-        <p className="text-slate-400 text-sm mt-1">System-wide monitoring, rider management, order approvals, and revenue control.</p>
+    <>
+      <PageHeader title="Voltora Admin Central" desc="System-wide monitoring, rider management, order approvals, and revenue control." />
+      <ErrorBox error={overviewError} />
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat label="Active riders" value={num(overview?.active_riders)} />
+        <Stat label="Orders today" value={num(overview?.orders_today)} tone="good" />
+        <Stat label="Operational stations" value={num(overview?.operational_stations)} />
+        <Stat label="Net revenue (PKR)" value={num(overview?.net_revenue_pkr, (n) => `Rs ${Number(n).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)} tone="good" />
       </div>
 
-      {/* 1. Dashboard Overview KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-          <p className="text-xs text-slate-400 uppercase font-semibold">Active Riders</p>
-          <p className="text-2xl font-bold text-white mt-2">{overview?.active_riders ?? '—'}</p>
-        </div>
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-          <p className="text-xs text-slate-400 uppercase font-semibold">Orders Today</p>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">{overview?.orders_today ?? '—'}</p>
-        </div>
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-          <p className="text-xs text-slate-400 uppercase font-semibold">Operational Stations</p>
-          <p className="text-2xl font-bold text-white mt-2">{overview?.operational_stations ?? '—'}</p>
-        </div>
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-          <p className="text-xs text-slate-400 uppercase font-semibold">Net Revenue (PKR)</p>
-          <p className="text-2xl font-bold text-emerald-400 mt-2">Rs. {overview?.net_revenue_pkr?.toLocaleString('en-PK') ?? '—'}</p>
-        </div>
-      </div>
-
-      {/* 2. Management Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* User & Rider Management */}
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
-          <h2 className="text-xl font-bold">Rider Account Management</h2>
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-slate-400">Target Rider ID</label>
-              <input
-                type="text"
-                value={riderIdToSuspend}
-                onChange={(e) => setRiderIdToSuspend(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm mt-1 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleUpdateRiderStatus('ACTIVE')}
-                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition"
-              >
-                Activate Account
-              </button>
-              <button
-                onClick={() => handleUpdateRiderStatus('SUSPENDED')}
-                className="flex-1 bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition"
-              >
-                Suspend Account
-              </button>
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card title="Rider account management" subtitle="Activate or suspend a rider account.">
+          <div className="space-y-4">
+            <Field label="Target rider ID">
+              <Input value={riderIdToSuspend} onChange={(e) => setRiderIdToSuspend(e.target.value)} />
+            </Field>
+            <div className="flex flex-wrap gap-3">
+              <Button className="flex-1" onClick={() => handleUpdateRiderStatus('ACTIVE')}>Activate account</Button>
+              <Button className="flex-1" variant="danger" onClick={() => handleUpdateRiderStatus('SUSPENDED')}>Suspend account</Button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Order Review Controls */}
-        {!reviewed && <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
-          <h2 className="text-xl font-bold">Online Order Review</h2>
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-slate-400">Order ID to Review</label>
-              <input
-                type="text"
-                value={orderToReview}
-                onChange={(e) => setOrderToReview(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm mt-1 focus:outline-none focus:border-emerald-500"
-              />
+        {!reviewed ? (
+          <Card title="Online order review" subtitle="Approve or reject an order waiting for review.">
+            <div className="space-y-4">
+              <Field label="Order ID to review">
+                <Input value={orderToReview} onChange={(e) => setOrderToReview(e.target.value)} placeholder="ORD-7" className="id-mono" />
+              </Field>
+              <div className="flex flex-wrap gap-3">
+                <Button className="flex-1" disabled={!orderToReview.trim()} onClick={() => handleReviewOrder('APPROVE')}>Approve order</Button>
+                <Button className="flex-1" variant="warning" disabled={!orderToReview.trim()} onClick={() => handleReviewOrder('REJECT')}>Reject / cancel</Button>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleReviewOrder('APPROVE')}
-                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition"
-              >
-                Approve Order
-              </button>
-              <button
-                onClick={() => handleReviewOrder('REJECT')}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition"
-              >
-                Reject / Cancel
-              </button>
-            </div>
-          </div>
-        </div>}
+          </Card>
+        ) : (
+          <Card title="Online order review">
+            <p className="text-body text-ink-600">That order has been reviewed. New orders waiting for review will appear on the Home delivery page.</p>
+          </Card>
+        )}
       </div>
-      <Modal open={!!notice} onClose={() => setNotice(null)} title={notice?.title} footer={<button onClick={() => setNotice(null)} className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950">OK</button>}>
-        <p className="text-sm text-ink-700">{notice?.text}</p>
+
+      <Card title="Recent orders" subtitle="The latest orders across your stations." actions={<a href="/admin/orders" className="text-body font-medium text-volt-700 hover:underline">View all</a>}>
+        {recent.loading && !recent.data ? <Loading /> : <><ErrorBox error={recent.error} onRetry={recent.reload} /><OrdersTable rows={recent.data || []} showUser /></>}
+      </Card>
+
+      <Modal open={!!notice} onClose={() => setNotice(null)} title={notice?.title} footer={<Button onClick={() => setNotice(null)}>OK</Button>}>
+        <p className="text-body text-ink-700">{notice?.text}</p>
       </Modal>
-    </div>
+    </>
   );
 }

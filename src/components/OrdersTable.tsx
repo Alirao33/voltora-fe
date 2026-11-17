@@ -16,7 +16,7 @@ export function OrdersTable({ rows, onOpen, showUser, showDriver }: { rows: Orde
         { key: 'station_id', header: 'Station', render: (o) => o.station_id },
         { key: 'mode', header: 'Mode', render: (o) => <Badge value={o.mode} /> },
         { key: 'status', header: 'Status', render: (o) => <Badge value={o.status} /> },
-        ...(showDriver ? [{ key: 'driver', header: 'Delivery man', render: (o: OrderOut) => (o.driver_name ? <span>{o.driver_name}{o.driver_phone ? <span className="block text-xs text-ink-500">{o.driver_phone}{o.van_name ? ` · ${o.van_name}` : ''}</span> : null}</span> : <span className="text-ink-400">{o.status === 'AWAITING_APPROVAL' ? 'Awaiting approval' : 'Not assigned'}</span>) }] : []),
+        ...(showDriver ? [{ key: 'driver', header: 'Delivery man', render: (o: OrderOut) => (o.driver_name ? <span>{o.driver_name}{o.driver_phone ? <span className="block text-sm text-ink-600">{o.driver_phone}{o.van_name ? ` · ${o.van_name}` : ''}</span> : null}</span> : <span className="text-ink-600">{o.status === 'AWAITING_APPROVAL' ? 'Awaiting approval' : 'Not assigned'}</span>) }] : []),
         { key: 'pack', header: 'Packs (out / in)', render: (o) => <Mono>{o.pack_out_id || '—'} / {o.pack_in_id || '—'}</Mono> },
         ...(showUser ? [{ key: 'receipt_no', header: 'Receipt', render: (o: OrderOut) => <Mono>{o.receipt_no || '—'}</Mono> }] : []),
         { key: 'total_pkr', header: 'Total', align: 'right' as const, render: (o) => pkr(o.actual_total_pkr ?? o.total_pkr) },

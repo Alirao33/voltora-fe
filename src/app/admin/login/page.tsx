@@ -65,7 +65,7 @@ function AdminLoginInner() {
     <AuthLayout
       title="Operator sign in"
       subtitle="Two-step verification for administrators."
-      side={<p className="max-w-md text-3xl font-semibold leading-tight">Fleet health, pricing, forecasting and rebalancing — in one console.</p>}
+      side={<p className="max-w-md text-3xl font-bold leading-tight">Fleet health, pricing, forecasting and rebalancing — in one console.</p>}
     >
       {!challenge ? (
         <form onSubmit={step1} className="space-y-4">
@@ -79,7 +79,7 @@ function AdminLoginInner() {
                 type="button"
                 onClick={() => setShowPw((s) => !s)}
                 aria-label={showPw ? 'Hide password' : 'Show password'}
-                className="absolute inset-y-0 right-3 text-sm font-medium text-ink-500 hover:text-ink-800"
+                className="absolute inset-y-0 right-3 text-sm font-medium text-ink-600 hover:text-ink-800"
               >
                 {showPw ? 'Hide' : 'Show'}
               </button>
@@ -92,13 +92,13 @@ function AdminLoginInner() {
           <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm text-ink-600">
             Step 2 of 2 · Challenge <span className="font-mono">{challenge.challenge_id}</span>
             {challenge.channel && <> · sent via {challenge.channel}</>}
-            {devCode && <div className="mt-1 text-xs">Dev code: <span className="font-mono font-semibold">{devCode}</span></div>}
+            {devCode && <div className="mt-1 text-xs">Dev code: <span className="font-mono font-medium">{devCode}</span></div>}
           </div>
           <Field label="Verification code">
             <Input value={code} onChange={(e) => setCode(e.target.value)} minLength={4} maxLength={8} required inputMode="numeric" autoComplete="one-time-code" className="font-mono tracking-[0.3em]" autoFocus />
           </Field>
           <Button type="submit" variant="dark" className="w-full" loading={busy}>Verify</Button>
-          <button type="button" className="w-full text-sm text-ink-500 hover:text-ink-800" onClick={() => { setChallenge(null); setCode(''); }}>
+          <button type="button" className="w-full text-sm text-ink-600 hover:text-ink-800" onClick={() => { setChallenge(null); setCode(''); }}>
             Start over
           </button>
         </form>
