@@ -14,7 +14,7 @@ interface Plan {
   description?: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+import { API_BASE } from '@/lib/api';
 
 function normalizePlans(data: any): Plan[] {
   const rawList = Array.isArray(data) ? data : data?.plans || data?.data || [];
@@ -40,7 +40,7 @@ export default function PublicPlansPage() {
 
     async function fetchPlans() {
       try {
-        const res = await fetch(`${API_URL}/api/plans`, {
+        const res = await fetch(`${API_BASE}/api/plans`, {
           signal: controller.signal,
         });
 

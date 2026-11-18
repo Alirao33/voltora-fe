@@ -184,9 +184,11 @@ const handleSubscribe = (planCode: string) => {
                 </div>
                 <button
                   onClick={() => handleSubscribe(plan.code)}
-                  className="mt-8 w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-3 rounded-xl transition duration-200"
+                  disabled={!!current}
+                  title={current ? 'You already have an active subscription. Cancel it first to choose another plan.' : undefined}
+                  className="mt-8 w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-3 rounded-xl transition duration-200 disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-600"
                 >
-                  Subscribe Now
+                  {current ? 'You already have an active plan' : 'Subscribe Now'}
                 </button>
               </div>
             ))}

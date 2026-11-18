@@ -1,5 +1,6 @@
 
 'use client';
+import { API_BASE } from '@/lib/api';
 
 import React, { useEffect, useState } from 'react';
 
@@ -25,7 +26,7 @@ export default function AdminTelemetryPage() {
 
     const fetchTelemetry = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/telemetry/latest');
+        const res = await fetch(`${API_BASE}/api/telemetry/latest`);
         if (!res.ok) throw new Error('Failed to fetch telemetry');
 
         const data = await res.json();

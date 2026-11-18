@@ -7,7 +7,6 @@ import { useAction, useApi } from '@/lib/hooks';
 import { cx, dt, pkr } from '@/lib/format';
 import type { PaymentMethod } from '@/lib/types';
 import { authorizeOrThrow, maybePaidHint, newPaymentReference, shouldRotateReference } from '@/lib/mockGateway';
-import { AutoView, RawJson } from '@/components/AutoView';
 import { OrderChat } from '@/components/OrderChat';
 import { Badge, Button, Card, ErrorBox, Field, Input, Loading, Modal, Mono, Select, Textarea } from '@/components/ui';
 
@@ -190,11 +189,11 @@ export default function OrderDetail() {
 
         <Card title="Summary">
           <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div><dt className="text-xs text-ink-600">Quoted total</dt><dd className="num text-lg font-medium">{pkr(o.total_pkr)}</dd></div>
+            <div><dt className="text-xs text-ink-600">Estimated total</dt><dd className="num text-lg font-medium">{pkr(o.total_pkr)}</dd></div>
             <div><dt className="text-xs text-ink-600">Charged</dt><dd className="num text-lg font-medium">{pkr(o.charged_pkr)}</dd></div>
-            <div><dt className="text-xs text-ink-600">Actual total</dt><dd className="num">{pkr(o.actual_total_pkr)}</dd></div>
+            <div><dt className="text-xs text-ink-600">Final total</dt><dd className="num">{pkr(o.actual_total_pkr)}</dd></div>
             <div>
-              <dt className="text-xs text-ink-600">Settlement</dt>
+              <dt className="text-xs text-ink-600">Adjustment</dt>
               <dd className={cx('num', (o.settlement_delta_pkr ?? 0) < 0 ? 'text-volt-700' : (o.settlement_delta_pkr ?? 0) > 0 ? 'text-red-600' : '')}>
                 {o.settlement_delta_pkr == null ? '—' : `${o.settlement_delta_pkr > 0 ? '+' : ''}${pkr(o.settlement_delta_pkr)}`}
               </dd>
@@ -207,7 +206,12 @@ export default function OrderDetail() {
           </dl>
           <div className="mt-5 border-t border-ink-100 pt-4">
             <div className="mb-3 text-xs font-medium uppercase tracking-wide text-ink-600">Price breakdown</div>
-            <AutoView data={o.price} />
+            <dl className="space-y-2 text-sm">
+              {o.price?.energy_kwh != null && <div className="flex justify-between"><dt className="text-ink-600">Energy supplied</dt><dd className="num">{Number(o.price.energy_kwh).toFixed(2)} kWh</dd></div>}
+              <div className="flex justify-between"><dt className="text-ink-600">Swap service</dt><dd className="num">{pkr(Number(o.price?.total_pkr ?? o.total_pkr ?? 0) - Number(o.price?.delivery_component_pkr ?? 0))}</dd></div>
+              {Number(o.price?.delivery_component_pkr) > 0 && <div className="flex justify-between"><dt className="text-ink-600">Home delivery</dt><dd className="num">{pkr(o.price.delivery_component_pkr)}</dd></div>}
+              <div className="flex justify-between border-t border-ink-100 pt-2 font-medium"><dt>Total</dt><dd className="num">{pkr(o.price?.total_pkr ?? o.total_pkr)}</dd></div>
+            </dl>
           </div>
         </Card>
       </div>
@@ -231,8 +235,22 @@ export default function OrderDetail() {
       </Modal>
 
       <Modal open={!!receipt} onClose={() => setReceipt(null)} title="Receipt" wide footer={<Button variant="secondary" onClick={() => window.print()}>Print</Button>}>
-        <AutoView data={receipt} />
-        <RawJson data={receipt} />
+        {receipt && (
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div><dt className="text-xs text-ink-600">Receipt no.</dt><dd><Mono>{receipt.receipt_no || '—'}</Mono></dd></div>
+            <div><dt className="text-xs text-ink-600">Date</dt><dd>{dt(receipt.date)}</dd></div>
+            <div><dt className="text-xs text-ink-600">Order</dt><dd><Mono>{receipt.order_id}</Mono></dd></div>
+            <div><dt className="text-xs text-ink-600">Station</dt><dd>{receipt.station_id}</dd></div>
+            <div><dt className="text-xs text-ink-600">Service</dt><dd>{receipt.mode === 'HOME' ? 'Home delivery' : 'Station swap'}</dd></div>
+            <div><dt className="text-xs text-ink-600">Payment</dt><dd>{receipt.covered_by_subscription ? 'Covered by subscription' : receipt.payment ? `${receipt.payment.method} · ${receipt.payment.status}` : '—'}</dd></div>
+            <div><dt className="text-xs text-ink-600">Battery issued</dt><dd><Mono>{receipt.pack_issued || '—'}</Mono></dd></div>
+            <div><dt className="text-xs text-ink-600">Battery returned</dt><dd><Mono>{receipt.pack_returned || '—'}</Mono></dd></div>
+            <div className="col-span-2 mt-2 border-t border-ink-100 pt-3 flex items-baseline justify-between">
+              <dt className="text-sm font-medium">Amount paid</dt>
+              <dd className="num text-xl font-semibold">{pkr(receipt.charged_pkr ?? receipt.total_pkr)}</dd>
+            </div>
+          </dl>
+        )}
       </Modal>
     </div>
   );

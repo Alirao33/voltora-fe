@@ -6,7 +6,6 @@ import { asList } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { getPosition } from '@/lib/format';
 import { latOf, lonOf, MiniMap, StationCard } from '@/components/domain';
-import { AutoView } from '@/components/AutoView';
 import { Button, Card, Empty, ErrorBox, Field, Input, Loading } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 
@@ -52,7 +51,13 @@ export default function StationsPage() {
                 <Link href={`/swap?site=${encodeURIComponent(stationId(active))}`} className="rounded-lg bg-volt-500 px-3 py-1.5 text-sm font-medium text-volt-950">Swap here</Link>
               </>
             }>
-              <AutoView data={active} />
+              <dl className="grid grid-cols-2 gap-4 text-sm">
+                {active.address && <div className="col-span-2"><dt className="text-xs text-ink-600">Area</dt><dd>{active.address}</dd></div>}
+                <div><dt className="text-xs text-ink-600">Lockers</dt><dd className="num text-lg font-medium">{active.total_lockers ?? '—'}</dd></div>
+                <div><dt className="text-xs text-ink-600">Free battery slots</dt><dd className="num text-lg font-medium">{active.free_slots ?? '—'}</dd></div>
+                {active.occupancy_status && <div><dt className="text-xs text-ink-600">Availability</dt><dd>{String(active.occupancy_status).replace(/_/g, ' ').toLowerCase().replace(/^./, (c: string) => c.toUpperCase())}</dd></div>}
+                {active.distance_km != null && <div><dt className="text-xs text-ink-600">Distance</dt><dd className="num">{Number(active.distance_km).toFixed(1)} km</dd></div>}
+              </dl>
             </Card>
           </div>
         )}

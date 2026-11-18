@@ -34,12 +34,19 @@ export default function RiderHome() {
         </Link>
       )}
 
+      {!active && (
+        <div className="flex flex-wrap gap-3">
+          <Link href="/rider/swap" className="rounded-xl bg-volt-500 px-5 py-3 text-base font-medium text-volt-950 hover:bg-volt-600">Start a swap</Link>
+          <Link href="/stations" className="rounded-xl border border-line bg-white px-5 py-3 text-base font-medium text-ink-800 hover:bg-ink-50">Find a station</Link>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Stat label="Points" value={user?.points ?? 0} sub={user?.is_vip ? 'VIP member' : 'Earn points on every swap'} />
         <Stat label="Orders" value={orders.data?.length ?? '—'} sub="Most recent" />
       </div>
 
-      <Card title="Subscription" actions={<Link href="/rider/plans" className="text-sm font-medium text-volt-700">{cur ? 'Change plan' : 'Browse plans'}</Link>}>
+      <Card title="Subscription" actions={<Link href="/rider/plans" className="text-sm font-medium text-volt-700">{cur ? 'View plans' : 'Browse plans'}</Link>}>
         {pass.loading ? <Loading /> : pass.error ? <ErrorBox error={pass.error} onRetry={pass.reload} /> : cur ? (
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -60,7 +67,9 @@ export default function RiderHome() {
       </Card>
 
       <Card title="Recent orders" actions={<Link href="/rider/orders" className="text-sm font-medium text-volt-700">View all</Link>}>
-        {orders.loading ? <Loading /> : <><ErrorBox error={orders.error} /><OrdersTable rows={orders.data || []} onOpen={(o) => router.push(`/rider/orders/${o.id}`)} /></>}
+        {orders.loading ? <Loading /> : !orders.error && (orders.data?.length ?? 0) === 0 ? (
+          <div className="py-6 text-center text-sm text-ink-600">No orders yet. <Link href="/rider/swap" className="font-medium text-volt-700">Start your first swap →</Link></div>
+        ) : <><ErrorBox error={orders.error} /><OrdersTable rows={orders.data || []} onOpen={(o) => router.push(`/rider/orders/${o.id}`)} /></>}
       </Card>
     </div>
   );

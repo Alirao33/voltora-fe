@@ -68,6 +68,7 @@ function RegisterForm() {
 
   const [formData, setFormData] = useState<Record<FieldName, string>>({ full_name: '', username: '', email: '', phone: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [generalErrors, setGeneralErrors] = useState<string[]>([]);
 
@@ -144,7 +145,7 @@ function RegisterForm() {
                   </label>
                   <input
                     id={field.name}
-                    type={field.type}
+                    type={field.name === 'password' && showPw ? 'text' : field.type}
                     name={field.name}
                     required={field.required}
                     autoComplete={field.autoComplete}
@@ -155,6 +156,11 @@ function RegisterForm() {
                     aria-describedby={err ? `${field.name}-error` : field.name === 'password' ? 'password-rules' : undefined}
                     className={`mt-1 block w-full rounded-lg bg-white border text-ink-900 px-3 py-2 text-sm focus:outline-none ${err ? 'border-red-500 focus:border-red-400' : 'border-line focus:border-emerald-500'}`}
                   />
+                  {field.name === 'password' && (
+                    <button type="button" onClick={() => setShowPw((v) => !v)} aria-pressed={showPw} className="mt-1 text-xs font-medium text-volt-700">
+                      {showPw ? 'Hide password' : 'Show password'}
+                    </button>
+                  )}
                   {err && <p id={`${field.name}-error`} className="mt-1 text-xs text-red-700">{err}</p>}
                   {field.name === 'password' && (
                     <ul id="password-rules" className="mt-2 space-y-0.5 text-xs" aria-live="polite">

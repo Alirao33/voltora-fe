@@ -90,7 +90,7 @@ function AdminLoginInner() {
       ) : (
         <form onSubmit={step2} className="space-y-4">
           <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm text-ink-600">
-            Step 2 of 2 · Challenge <span className="font-mono">{challenge.challenge_id}</span>
+            Step 2 of 2
             {challenge.channel && <> · sent via {challenge.channel}</>}
             {devCode && <div className="mt-1 text-xs">Dev code: <span className="font-mono font-medium">{devCode}</span></div>}
           </div>
