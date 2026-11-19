@@ -79,7 +79,7 @@ function LoginInner() {
             role="tab"
             aria-selected={portal === v}
             onClick={() => setPortal(v)}
-            className={cx('rounded-xl px-3 py-2.5 text-sm font-medium transition', portal === v ? 'bg-volt-500 text-volt-950 shadow' : 'text-ink-600 hover:bg-white')}
+            className={cx('rounded-xl px-3 py-2.5 text-sm font-medium transition', portal === v ? 'bg-volt-800 text-white shadow' : 'text-ink-700 hover:bg-volt-50')}
           >
             {label}
           </button>
@@ -100,14 +100,14 @@ function LoginInner() {
               </button>
             </div>
           </Field>
-          <Button type="submit" className="w-full" loading={busy}>Sign in</Button>
+          <Button type="submit" variant="deep" className="w-full" loading={busy}>Sign in</Button>
         </form>
       ) : !otpSent ? (
         <form className="space-y-4" onSubmit={e => { e.preventDefault(); sendCode(); }}>
           <Field label="Phone number" hint="We'll text you a one-time code. New numbers get an account automatically.">
             <Input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="03xx xxxxxxx" required />
           </Field>
-          <Button type="submit" className="w-full" loading={busy}>Send code</Button>
+          <Button type="submit" variant="deep" className="w-full" loading={busy}>Send code</Button>
         </form>
       ) : (
         <form className="space-y-4" onSubmit={e => {
@@ -121,7 +121,7 @@ function LoginInner() {
           <Field label="Full name (first time only)">
             <Input value={name} onChange={e => setName(e.target.value)} maxLength={120} />
           </Field>
-          <Button type="submit" className="w-full" loading={busy}>Verify &amp; sign in</Button>
+          <Button type="submit" variant="deep" className="w-full" loading={busy}>Verify &amp; sign in</Button>
           <button type="button" className="w-full text-center text-sm text-ink-600 hover:text-ink-800" onClick={() => { setOtpSent(null); setCode(''); }}>
             Use a different number
           </button>
@@ -130,9 +130,9 @@ function LoginInner() {
 
       <div className="mt-8 space-y-2 text-center text-sm text-ink-600">
         {portal === 'RIDER'
-          ? <p>New here? <Link href="/register" className="font-medium text-volt-700">Create an account</Link></p>
+          ? <p>New here? <Link href="/register" className="font-medium text-volt-800 underline-offset-2 hover:underline">Create an account</Link></p>
           : <p>Delivery man accounts are set up by your operator. Ask them if you can't sign in.</p>}
-        <p>Operator? <Link href="/admin/login" className="font-medium text-ink-800">Admin sign in</Link></p>
+        <p>Operator? <Link href="/admin/login" className="font-medium text-volt-800 underline-offset-2 hover:underline">Admin sign in</Link></p>
       </div>
     </AuthLayout>
   );

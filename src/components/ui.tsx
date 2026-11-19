@@ -8,13 +8,14 @@ import { useBand } from './band';
 // 'ghost', 'dark', 'danger' and 'warning' are kept so every existing call still works; they use the secondary look,
 // and the two destructive ones turn red on hover only.
 type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'warning' | 'dark';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'warning' | 'dark' | 'deep';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: ReactNode;
 };
 export function Button({ variant = 'primary', size = 'md', loading, icon, className, children, disabled, ...p }: BtnProps) {
   const primary = variant === 'primary';
+  const deep = variant === 'deep'; // dark green with white text
   const destructive = variant === 'danger' || variant === 'warning';
   return (
     <button
@@ -26,7 +27,8 @@ export function Button({ variant = 'primary', size = 'md', loading, icon, classN
         size === 'md' && 'h-11 px-5',
         size === 'lg' && 'h-12 px-6',
         primary && 'bg-volt-500 text-volt-950 hover:bg-volt-600 disabled:hover:bg-ink-100',
-        !primary && 'border border-ink-300 bg-white text-ink-900 hover:bg-volt-50 disabled:hover:bg-ink-100',
+        deep && 'bg-volt-800 text-white hover:bg-volt-900 disabled:hover:bg-ink-100',
+        !primary && !deep && 'border border-ink-300 bg-white text-ink-900 hover:bg-volt-50 disabled:hover:bg-ink-100',
         !primary && destructive && 'hover:text-red-700',
         className,
       )}

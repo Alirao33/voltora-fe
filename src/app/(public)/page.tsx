@@ -14,7 +14,7 @@ interface Plan {
   price_pkr: number;
 }
 
-import { API_BASE } from '@/lib/api';
+import { API_BASE, getTokens } from '@/lib/api';
 
 function normalizePlans(data: any): Plan[] {
   const rawList = Array.isArray(data) ? data : data?.plans || data?.data || [];
@@ -57,82 +57,83 @@ export default function PublicLandingPage() {
   }, []);
 
   const handleSelectPlan = (planCode: string) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    console.log(token)
-    // if (token) {
-    //   router.push(`/rider/checkout?plan=${encodeURIComponent(planCode)}`);
-    // } else {
-    //   router.push(`/register?plan=${encodeURIComponent(planCode)}`);
-    // }
+    const q = encodeURIComponent(planCode);
+    router.push(getTokens()?.access_token ? `/rider/checkout?plan=${q}` : `/register?plan=${q}`);
   };
 
-  return (
-    <div className="min-h-screen bg-canvas text-ink-900 selection:bg-volt-500 selection:text-volt-950">
-      {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 py-20 text-center space-y-6">
-        <span className="inline-block px-3 py-1 bg-status-success-bg border border-volt-200 text-status-success-fg rounded-full text-xs font-medium tracking-wider uppercase">
-          Voltora Smart Swapping Network
-        </span>
-        <h1 className="text-4xl md:text-5xl font-bold max-w-3xl mx-auto leading-tight">
-          Swap EV Batteries in Seconds, Not Hours.
-        </h1>
-        <p className="text-ink-600 max-w-xl mx-auto text-base md:text-lg">
-          Powering urban electric mobility with instant locker battery access across the city network.
-        </p>
+  const features = [
+    { title: 'Live battery health', text: 'Every pack is monitored, so the one you pick up is healthy and full.' },
+    { title: 'Locker swaps', text: 'Drop the empty pack and take a charged one from a locker near you.' },
+    { title: 'Simple passes', text: 'Monthly, 6-month and yearly passes, or pay per swap.' },
+  ];
 
-        <div className="flex justify-center gap-4 pt-4">
-          <Link
-            href="/plans"
-            className="bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium px-6 py-3 rounded-xl transition"
-          >
-            Explore Plans
-          </Link>
-          <Link
-            href="/register"
-            className="border border-line bg-white hover:bg-ink-50 text-ink-800 font-medium px-6 py-3 rounded-xl transition"
-          >
-            Create Rider Account
-          </Link>
+  return (
+    <div className="min-h-screen bg-white text-ink-900 selection:bg-volt-800 selection:text-white">
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-volt-950 via-[#06382a] to-volt-900 text-white">
+        <div className="mx-auto max-w-6xl px-5 py-14 text-center sm:py-20 lg:py-24">
+          <span className="inline-block rounded-full border border-volt-400/40 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-volt-200">
+            Voltora smart swapping network
+          </span>
+          <h1 className="mx-auto mt-5 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
+            Swap EV Batteries in Seconds, Not Hours.
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base text-volt-100 md:text-lg">
+            Powering urban electric mobility with instant locker battery access across the city network.
+          </p>
+          <div className="mx-auto mt-8 flex max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+            <Link href="/plans" className="rounded-xl bg-white px-6 py-3 text-center font-semibold text-volt-900 transition hover:bg-volt-100">
+              Explore Plans
+            </Link>
+            <Link href="/register" className="rounded-xl border border-white/60 px-6 py-3 text-center font-semibold text-white transition hover:bg-white/10">
+              Create Rider Account
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Subscription Plans Section */}
-      <section className="max-w-5xl mx-auto px-6 py-12 space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold">Featured Locker Passes</h2>
-          <p className="text-ink-600 text-sm">Choose a subscription plan tailored to your daily range requirement.</p>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12 text-ink-600">Loading subscription plans...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className="surface rounded-card p-6 flex flex-col justify-between space-y-6 hover:border-volt-500 transition-colors duration-150"
-              >
-                <div className="space-y-3">
-                  <span className="text-xs font-medium uppercase tracking-wider text-volt-700">
-                    {plan.duration_type}
-                  </span>
-                  <h3 className="text-xl font-medium">{plan.name}</h3>
-                  <div className="text-2xl font-bold text-ink-900">
-                    Rs {plan.price_pkr.toLocaleString('en-PK')}
-                    <span className="text-xs font-normal text-ink-600"> {perPeriod(plan.duration_days)}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleSelectPlan(plan.code)}
-                  className="w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-2.5 rounded-xl text-sm transition"
-                >
-                  Subscribe Now
-                </button>
-              </div>
-            ))}
+      {/* Features */}
+      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-10 sm:grid-cols-3 sm:py-14">
+        {features.map((f) => (
+          <div key={f.title} className="rounded-2xl border border-volt-100 bg-volt-50 p-5">
+            <h3 className="text-lg font-semibold text-volt-900">{f.title}</h3>
+            <p className="mt-1 text-sm text-ink-700">{f.text}</p>
           </div>
-        )}
+        ))}
+      </section>
+
+      {/* Plans */}
+      <section className="bg-volt-50">
+        <div className="mx-auto max-w-5xl space-y-8 px-5 py-12 sm:py-16">
+          <div className="space-y-2 text-center">
+            <h2 className="text-2xl font-bold text-volt-950 sm:text-3xl">Featured Locker Passes</h2>
+            <p className="text-sm text-ink-600">Choose a subscription plan tailored to your daily range requirement.</p>
+          </div>
+
+          {loading ? (
+            <div className="py-12 text-center text-ink-600">Loading subscription plans...</div>
+          ) : plans.length === 0 ? (
+            <div className="py-8 text-center text-ink-600">Plans are not available right now. Please try again shortly.</div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6">
+              {plans.map((plan) => (
+                <div key={plan.id} className="flex flex-col justify-between space-y-6 rounded-2xl border border-volt-100 bg-white p-6 shadow-sm transition-colors duration-150 hover:border-volt-700">
+                  <div className="space-y-3">
+                    <span className="text-xs font-medium uppercase tracking-wider text-volt-800">{plan.duration_type}</span>
+                    <h3 className="text-xl font-semibold text-volt-950">{plan.name}</h3>
+                    <div className="text-2xl font-bold text-ink-900">
+                      Rs {plan.price_pkr.toLocaleString('en-PK')}
+                      <span className="text-xs font-normal text-ink-600"> {perPeriod(plan.duration_days)}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => handleSelectPlan(plan.code)} className="w-full rounded-xl bg-volt-800 py-3 text-sm font-semibold text-white transition hover:bg-volt-900">
+                    Subscribe Now
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );

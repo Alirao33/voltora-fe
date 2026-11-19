@@ -22,20 +22,20 @@ export function PublicHeader() {
         <Logo />
         <nav className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className={cx('rounded-md px-3 py-2 text-body font-medium transition-colors duration-150', path === l.href ? 'text-ink-900' : 'text-ink-600 hover:text-ink-900')}>
+            <Link key={l.href} href={l.href} className={cx('rounded-md px-3 py-2 text-body font-medium transition-colors duration-150', path === l.href ? 'text-volt-800' : 'text-ink-600 hover:text-volt-800')}>
               {l.label}
             </Link>
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
           {user ? (
-            <Link href={homeFor(user)} className="rounded-lg bg-volt-500 px-4 py-2.5 text-body font-medium text-volt-950 transition-colors duration-150 hover:bg-volt-600">
+            <Link href={homeFor(user)} className="rounded-lg bg-volt-800 px-4 py-2.5 text-body font-medium text-white transition-colors duration-150 hover:bg-volt-900">
               Open dashboard
             </Link>
           ) : (
             <>
               <Link href="/login" className="rounded-lg px-3 py-2.5 text-body font-medium text-ink-700 transition-colors duration-150 hover:bg-ink-100">Sign in</Link>
-              <Link href="/register" className="rounded-lg bg-volt-500 px-4 py-2.5 text-body font-medium text-volt-950 transition-colors duration-150 hover:bg-volt-600">Get started</Link>
+              <Link href="/register" className="rounded-lg bg-volt-800 px-4 py-2.5 text-body font-medium text-white transition-colors duration-150 hover:bg-volt-900">Get started</Link>
             </>
           )}
         </div>
@@ -48,7 +48,7 @@ export function PublicHeader() {
           {LINKS.map((l) => (
             <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="block rounded-md px-2 py-3 text-body font-medium text-ink-700">{l.label}</Link>
           ))}
-          <Link href={user ? homeFor(user) : '/login'} className="mt-2 block rounded-lg bg-volt-500 px-3 py-3 text-center text-body font-medium text-volt-950">
+          <Link href={user ? homeFor(user) : '/login'} className="mt-2 block rounded-lg bg-volt-800 px-3 py-3 text-center text-body font-medium text-white">
             {user ? 'Open dashboard' : 'Sign in'}
           </Link>
         </div>
@@ -59,12 +59,12 @@ export function PublicHeader() {
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-line bg-white">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-cell text-ink-600">
-        <span>© {new Date().getFullYear()} Voltora · Battery swapping for Pakistan's riders</span>
-        <div className="flex gap-4">
-          <Link href="/admin/login" className="hover:text-ink-800">Operator login</Link>
-          <Link href="/login" className="hover:text-ink-800">Driver login</Link>
+    <footer className="bg-volt-950 text-volt-100">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-8 text-cell sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-volt-200">© {new Date().getFullYear()} Voltora · Battery swapping for Pakistan&apos;s riders</span>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/login" className="rounded-lg border border-volt-500 bg-white px-4 py-2 font-medium text-volt-900 transition-colors hover:bg-volt-100">Operator login</Link>
+          <Link href="/login?role=driver" className="rounded-lg border border-volt-500 bg-volt-800 px-4 py-2 font-medium text-white transition-colors hover:bg-volt-700">Driver login</Link>
         </div>
       </div>
     </footer>

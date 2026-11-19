@@ -13,6 +13,7 @@ export default function StationsPage() {
   const toast = useToast();
   const [pos, setPos] = useState<{ lat: number; lon: number } | null>(null);
   const [radius, setRadius] = useState(25);
+  const [radiusText, setRadiusText] = useState('25'); // lets the rider clear the box and type a new number
   const [q, setQ] = useState('');
   const [sel, setSel] = useState<any>(null);
   const { data, loading, error, reload } = useApi(() => Guest.stations({ lat: pos?.lat, lon: pos?.lon, radius_km: radius }), [pos?.lat, pos?.lon, radius]);
@@ -28,7 +29,9 @@ export default function StationsPage() {
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Search"><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name or area" /></Field>
-          <Field label="Radius (km)"><Input type="number" min={1} max={100} value={radius} onChange={(e) => setRadius(Math.min(100, Math.max(1, +e.target.value || 25)))} className="w-24" /></Field>
+          <Field label="Radius (km)"><Input type="number" min={1} max={100} value={radiusText} className="w-24"
+            onChange={(e) => { setRadiusText(e.target.value); const n = Number(e.target.value); if (e.target.value !== '' && n >= 1 && n <= 100) setRadius(n); }}
+            onBlur={() => { const n = Math.min(100, Math.max(1, Number(radiusText) || radius)); setRadius(n); setRadiusText(String(n)); }} /></Field>
           <Button variant="secondary" onClick={() => getPosition().then((p) => { setPos(p); setSel(null); toast.success('Showing stations nearest to you'); }).catch((e) => toast.error(e.message))}>📍 Use my location</Button>
         </div>
       </div>
