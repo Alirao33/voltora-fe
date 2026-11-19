@@ -107,7 +107,7 @@ export default function OrderDetail() {
             <>
               <Card title="Your delivery man">
                 <p className="text-lg font-medium text-ink-900">{o.driver_name}</p>
-                <p className="text-sm text-ink-600">{o.van_name ? `Van ${o.van_name} · ` : ''}on the way with your battery. Message them below, and share your delivery OTP only when you receive the pack.</p>
+                <p className="text-sm text-ink-600">{o.van_name ? `Van ${o.van_name} · ` : ''}{o.delivery_stage === 'EN_ROUTE' ? 'is on the way with your battery' : o.delivery_stage === 'PICKED_UP' ? 'has picked up your battery from the locker' : 'accepted your delivery'}. Message them below, and share your delivery OTP only when you receive the pack.</p>
               </Card>
               <Card title={`Chat with ${o.driver_name}`}>
                 <OrderChat orderId={o.id} side="RIDER" />

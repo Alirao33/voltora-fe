@@ -22,6 +22,10 @@ export function dt(s?: string | null, opts: { dateOnly?: boolean } = {}) {
     : d.toLocaleString('en-PK', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
+/** DD/MM/YY in Karachi time. */
+export const ddmmyy = (s?: string | null) =>
+  s ? new Date(s).toLocaleDateString('en-GB', { timeZone: 'Asia/Karachi', day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
+
 export function ago(s?: string | null) {
   if (!s) return '—';
   const diff = (Date.now() - new Date(s).getTime()) / 1000;

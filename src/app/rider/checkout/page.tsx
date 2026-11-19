@@ -24,6 +24,7 @@ function CheckoutForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planCode = searchParams.get('plan');
+  const isUpgrade = searchParams.get('upgrade') === '1';
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,9 +101,9 @@ function CheckoutForm() {
         return;
       }
       const auth = await authorizeOrThrow({ reference: refId.current, method, amount_pkr: plan.price_pkr, outcome: 'approve' });
-      await Rider.subscribe(plan.id, { payment_method: method, payment_reference: auth.reference });
+      await (isUpgrade ? Rider.upgrade : Rider.subscribe)(plan.id, { payment_method: method, payment_reference: auth.reference });
       refId.current = null;
-      router.push('/rider/bookings'); // next step: pick a station for the locker
+      router.push(isUpgrade ? '/rider' : '/rider/bookings'); // new pass: pick a station for the locker next
     } catch (err: any) {
       if (shouldRotateReference(err)) refId.current = null;
       setPayError((err?.message || 'Payment processing failed. Try again.') + maybePaidHint(err));
@@ -166,7 +167,7 @@ function CheckoutForm() {
             <li className="flex items-center gap-2">⚡ Linked directly to your registered rider profile</li>
           </ul>
 
-          {current && (
+          {current && !isUpgrade && (
             <div className="rounded-xl border border-amber-300 bg-status-warning-bg p-4 text-body text-status-warning-fg flex items-center justify-between gap-3">
               <span>You have an active subscription until {new Date(current.ends_at).toLocaleDateString('en-PK')}.</span>
               <button

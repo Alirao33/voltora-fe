@@ -13,12 +13,15 @@ const km = (n?: number | null) => (n == null ? null : `${n.toFixed(1)} km`);
 const directions = (t: VanTaskOut) => `https://www.google.com/maps/dir/?api=1&destination=${t.latitude},${t.longitude}`;
 const nameOf = (t: VanTaskOut) => (t.kind === 'DELIVERY' ? t.customer_name || 'Customer' : `Station ${t.station_id}`);
 
-/** Three steps of a home delivery: assigned, locker code shared by the rider, handed over. */
+/** Four steps of a home delivery. Picked Up and En Route are set by the driver; Delivered closes the order. */
 function Steps({ t }: { t: VanTaskOut }) {
+  const st = t.delivery_stage || 'ACCEPTED';
+  const rank = ['ACCEPTED', 'PICKED_UP', 'EN_ROUTE'].indexOf(st);
   const steps = [
-    { label: 'Assigned', on: true },
-    { label: 'Locker code', on: t.locker_code_state === 'SHARED' },
-    { label: 'Handover', on: false },
+    { label: 'Accepted', on: true },
+    { label: 'Picked Up from Locker', on: rank >= 1 },
+    { label: 'En Route', on: rank >= 2 },
+    { label: 'Delivered', on: false },
   ];
   return (
     <ol className="flex items-center gap-2 text-xs">
@@ -64,6 +67,11 @@ export default function DriverHome() {
     refresh();
   };
 
+  const moveTo = async (t: VanTaskOut, stage: 'PICKED_UP' | 'EN_ROUTE') => {
+    await act.run(() => Driver.setStage(t.id, stage), stage === 'PICKED_UP' ? 'Marked as picked up' : 'Marked en route');
+    refresh();
+  };
+
   const handover = async () => {
     if (!active) return;
     const r = await act.run(() => Driver.confirm(active.id, { delivery_otp: otp.trim() }), 'Delivery completed. Order closed.');
@@ -106,6 +114,14 @@ export default function DriverHome() {
               <h2 className="text-xl font-medium text-ink-900">{nameOf(current)}</h2>
               <p className="text-sm text-ink-600">{current.address || current.station_id || '—'}</p>
               {current.kind === 'DELIVERY' && (
+                <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  {current.customer_phone && <div><dt className="text-xs text-ink-600">Customer phone</dt><dd><a href={`tel:${current.customer_phone}`} className="font-medium text-volt-700 underline">📞 {current.customer_phone}</a></dd></div>}
+                  <div><dt className="text-xs text-ink-600">Station · slot</dt><dd className="font-mono">{current.station_label || '—'}{current.slot_id ? ` · ${current.slot_id}` : ''}</dd></div>
+                  <div><dt className="text-xs text-ink-600">Battery pack</dt><dd className="font-mono text-base font-semibold text-ink-900">{current.pack_id || '—'}</dd></div>
+                  <div><dt className="text-xs text-ink-600">Distance · delivery charge</dt><dd>{km(current.delivery_km) ?? '—'}{current.delivery_charge_pkr != null ? ` · Rs ${Math.round(current.delivery_charge_pkr)}` : ''}</dd></div>
+                </dl>
+              )}
+              {current.kind === 'DELIVERY' && (
                 <p className="mt-1 text-sm text-ink-600">
                   {km(current.delivery_km) ? `${km(current.delivery_km)} from the station` : ''}
                   {current.delivery_charge_pkr != null ? ` · delivery charge Rs ${Math.round(current.delivery_charge_pkr)}` : ''}
@@ -130,7 +146,7 @@ export default function DriverHome() {
               <div className="rounded-xl border border-ink-100 bg-ink-50/70 p-4">
                 {current.locker_code_state === 'SHARED' && current.locker_code ? (
                   <div className="text-center">
-                    <div className="text-xs uppercase tracking-widest text-ink-600">Locker code</div>
+                    <div className="text-xs uppercase tracking-widest text-ink-600">Locker code (opens {current.station_label} · {current.slot_id || 'your slot'})</div>
                     <div className="font-mono text-4xl font-bold tracking-[0.3em] text-ink-900">{current.locker_code}</div>
                   </div>
                 ) : current.locker_code_state === 'REQUESTED' ? (
@@ -142,7 +158,15 @@ export default function DriverHome() {
             )}
 
             {current.kind === 'DELIVERY' ? (
-              <Button size="lg" className="w-full" onClick={() => { setOtp(''); setActive(current); }}>Verify delivery OTP &amp; hand over</Button>
+              current.delivery_stage === 'EN_ROUTE' ? (
+                <Button size="lg" className="w-full" onClick={() => { setOtp(''); setActive(current); }}>Enter rider passcode &amp; mark Delivered</Button>
+              ) : current.delivery_stage === 'PICKED_UP' ? (
+                <Button size="lg" className="w-full" loading={act.busy} onClick={() => moveTo(current, 'EN_ROUTE')}>Start trip: mark En Route</Button>
+              ) : (
+                <Button size="lg" className="w-full" loading={act.busy} disabled={current.locker_code_state !== 'SHARED'} onClick={() => moveTo(current, 'PICKED_UP')}>
+                  {current.locker_code_state === 'SHARED' ? 'Pack taken from locker: mark Picked Up' : 'Get the locker code first'}
+                </Button>
+              )
             ) : (
               <Button size="lg" className="w-full" variant="secondary" loading={act.busy} onClick={async () => { if (await act.run(() => Driver.confirm(current.id, {}), 'Stop confirmed')) refresh(); }}>
                 Confirm stop ({current.drop_count} drop / {current.pickup_count} pickup)
@@ -186,9 +210,9 @@ export default function DriverHome() {
         }
       >
         <div className="space-y-3">
-          <p className="text-sm text-ink-600">Ask {active?.customer_name || 'the customer'} for the delivery OTP shown on their order page.</p>
-          <Field label="Delivery OTP">
-            <Input value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} maxLength={8} className="font-mono tracking-widest" placeholder="e.g. 4829" inputMode="numeric" />
+          <p className="text-sm text-ink-600">Ask {active?.customer_name || 'the customer'} for the 6-digit delivery passcode shown on their order page. The order closes only when it matches.</p>
+          <Field label="Delivery passcode">
+            <Input value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} maxLength={8} className="font-mono tracking-widest" placeholder="e.g. 482913" inputMode="numeric" />
           </Field>
         </div>
       </Modal>

@@ -71,7 +71,9 @@ export default function PlansPage() {
 
     return () => { live = false; };
   }, []);
-  const [current, setCurrent] = useState<{ ends_at: string } | null>(null);
+  const [current, setCurrent] = useState<{ ends_at: string; plan_id: number } | null>(null);
+  const [upgradeTo, setUpgradeTo] = useState<Plan | null>(null);
+  const currentPrice = plans.find((p) => Number(p.id) === current?.plan_id)?.price_pkr ?? 0;
   const [cancelling, setCancelling] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -145,6 +147,30 @@ const handleSubscribe = (planCode: string) => {
           </Modal>
         </div>
 
+        <Modal
+          open={!!upgradeTo}
+          onClose={() => setUpgradeTo(null)}
+          title={upgradeTo && Number(upgradeTo.id) === current?.plan_id ? 'Renew your plan?' : 'Upgrade your plan?'}
+          footer={
+            <>
+              <button onClick={() => setUpgradeTo(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100">Not now</button>
+              <button
+                onClick={() => router.push(`/rider/checkout?plan=${encodeURIComponent(upgradeTo!.code)}&upgrade=1`)}
+                className="rounded-lg bg-volt-500 px-4 py-2 text-sm font-medium text-volt-950 hover:bg-volt-600"
+              >
+                Continue to upgrade
+              </button>
+            </>
+          }
+        >
+          {upgradeTo && (
+            <div className="space-y-2 text-sm text-ink-700">
+              <p>You will move to <b>{upgradeTo.name}</b> for Rs {upgradeTo.price_pkr.toLocaleString('en-PK')}. Your locker stays the same. Renewing the same plan adds to your current end date; a higher plan starts now and replaces the current one.</p>
+              <p className="font-medium">Cancellations and plan changes do not give a refund. Unused time on a replaced plan is not paid back.</p>
+            </div>
+          )}
+        </Modal>
+
         {error ? (
           <p className="text-red-700">{error}</p>
         ) : plans.length === 0 ? (
@@ -183,12 +209,11 @@ const handleSubscribe = (planCode: string) => {
                   </ul>
                 </div>
                 <button
-                  onClick={() => handleSubscribe(plan.code)}
-                  disabled={!!current}
-                  title={current ? 'You already have an active subscription. Cancel it first to choose another plan.' : undefined}
+                  onClick={() => (current ? setUpgradeTo(plan) : handleSubscribe(plan.code))}
+                  disabled={!!current && plan.price_pkr < currentPrice}
                   className="mt-8 w-full bg-volt-500 hover:bg-volt-600 text-volt-950 font-medium py-3 rounded-xl transition duration-200 disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-600"
                 >
-                  {current ? 'You already have an active plan' : 'Subscribe Now'}
+                  {!current ? 'Subscribe Now' : Number(plan.id) === current.plan_id ? 'Renew this plan' : plan.price_pkr > currentPrice ? 'Upgrade to this plan' : 'Lower than your plan'}
                 </button>
               </div>
             ))}

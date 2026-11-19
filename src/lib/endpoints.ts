@@ -28,9 +28,12 @@ export const Users = {
 
 export const Rider = {
   subscription: () => api<any>('/api/rider/subscription'),
+  summary: () => api<T.RiderSummary>('/api/rider/summary'),
   lockerPass: () => api<any>('/api/rider/locker-pass'),
   setLockerStation: (station_id: string) => api<any>('/api/rider/locker-pass/station', { method: 'POST', body: { station_id } }),
   cancelSubscription: () => api<any>('/api/rider/subscription/cancel', { method: 'POST' }),
+  upgrade: (planId: number | string, b: { payment_method: T.PaymentMethod; payment_reference: string }) =>
+    api<T.SubscriptionOut>(`/api/rider/plans/${enc(String(planId))}/upgrade`, { method: 'POST', body: b }),
   subscribe: (planId: number | string, b: { payment_method: T.PaymentMethod; payment_reference: string }) =>
     api<T.SubscriptionOut>(`/api/rider/plans/${enc(String(planId))}/subscribe`, { method: 'POST', body: b }),
   createOrder: (b: T.OrderCreate) => api<T.OrderOut>('/api/rider/orders', { method: 'POST', body: b }),
@@ -86,6 +89,7 @@ export const Admin = {
   setBatteryState: (id: string, b: { state: T.BatteryState; station_id?: string | null; locker_id?: string | null }) =>
     api<T.BatteryOut>(`/api/admin/batteries/${enc(id)}/state`, { method: 'PATCH', body: b }),
   chargingPlan: () => api<any>('/api/admin/charging/plan'),
+  recomputeChargingPlan: () => api<any>('/api/admin/charging/plan/recompute', { method: 'POST' }),
   telemetryHistory: (id: string, hours = 24, limit = 1000) =>
     api<T.TelemetryOut[]>(`/api/admin/telemetry/${enc(id)}/history`, { query: { hours, limit } }),
   // pricing & plans
@@ -108,8 +112,6 @@ export const Admin = {
   reviewOrder: (id: number, action: 'APPROVE' | 'REJECT', reason?: string) =>
     api<any>(`/api/admin/orders/${id}/review`, { method: 'POST', body: { action, reason: reason || null } }),
   payments: (q: { status?: string; limit?: number }) => api<T.PaymentOut[]>('/api/admin/payments', { query: q }),
-  refund: (id: number, b: { amount_pkr?: number | null; reason?: string }) =>
-    api<T.PaymentOut>(`/api/admin/payments/${id}/refund`, { method: 'POST', body: b }),
   // alerts & audit
   alerts: (q: { resolved?: boolean; type?: string; limit?: number }) => api<T.AlertOut[]>('/api/admin/alerts', { query: q }),
   ackAlert: (id: number) => api<T.AlertOut>(`/api/admin/alerts/${id}/ack`, { method: 'POST' }),
@@ -147,6 +149,7 @@ export const Driver = {
     api<T.VanOut>('/api/driver/location', { method: 'POST', body: { latitude, longitude } }),
   messages: (orderId: number) => api<any>(`/api/driver/orders/${orderId}/messages`),
   sendMessage: (orderId: number, body: string) => api<any>(`/api/driver/orders/${orderId}/messages`, { method: 'POST', body: { body } }),
+  setStage: (taskId: number, stage: 'PICKED_UP' | 'EN_ROUTE') => api<T.VanTaskOut>(`/api/driver/tasks/${taskId}/stage`, { method: 'POST', body: { stage } }),
   requestLockerCode: (orderId: number) => api<any>(`/api/driver/orders/${orderId}/locker-code/request`, { method: 'POST' }),
   confirm: (id: number, b: { delivery_otp?: string | null; confirmed_drop?: number | null; confirmed_pickup?: number | null; returned_pack_id?: string | null }) =>
     api<T.VanTaskOut>(`/api/driver/tasks/${id}/confirm`, { method: 'POST', body: b }),

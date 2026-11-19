@@ -43,7 +43,6 @@ export default function Reports() {
         <Stat label="Swaps completed" value={s?.swaps ?? 0} />
         <Stat label="SoC charges" value={pkr(s?.soc_charge_pkr ?? 0)} />
         <Stat label="SoH charges" value={pkr(s?.soh_charge_pkr ?? 0)} />
-        <Stat label="Refunded" value={pkr(s?.refunded_pkr ?? 0)} />
         <Stat label="Unpaid bills" value={pkr(s?.outstanding_bills_pkr ?? 0)} tone="warn" />
         <Stat label="Active passes" value={s?.active_subscriptions ?? 0} />
         <Stat label="Open alerts" value={s?.open_alerts ?? 0} />
@@ -70,14 +69,12 @@ export default function Reports() {
             { key: 'soc', header: 'SoC used', align: 'right', render: (r) => pct(r.soc_used_pct) },
             { key: 'soh', header: 'SoH', align: 'right', render: (r) => pct(r.soh_pct) },
             { key: 'paid', header: 'Paid', align: 'right', render: (r) => r.status === 'UNPAID' ? <span className="font-semibold text-red-600">Unpaid {pkr(r.unpaid_pkr)}</span> : pkr(r.paid_pkr) },
-            { key: 'refunded', header: 'Refunded', align: 'right', render: (r) => pkr(r.refunded_pkr) },
             { key: 'net', header: 'Net', align: 'right', render: (r) => <b>{pkr(r.net_pkr)}</b> },
           ]} />
         )}
         {log.data && (
           <div className="mt-4 flex flex-wrap justify-end gap-6 border-t border-ink-100 pt-3 text-sm">
             <span>Paid <b>{pkr(log.data.totals.paid_pkr)}</b></span>
-            <span>Refunded <b>{pkr(log.data.totals.refunded_pkr)}</b></span>
             <span>Net <b>{pkr(log.data.totals.net_pkr)}</b></span>
             {log.data.totals.unpaid_pkr > 0 && <span className="font-semibold text-red-600">Unpaid {pkr(log.data.totals.unpaid_pkr)}</span>}
           </div>

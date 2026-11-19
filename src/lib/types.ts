@@ -75,7 +75,7 @@ export interface OrderOut {
   settlement_delta_pkr?: number | null; delivery_address?: string | null; delivery_otp?: string | null;
   rating?: number | null; receipt_no?: string | null; hold_expires_at?: string | null;
   created_at: string; completed_at?: string | null;
-  payment_due_at?: string | null; bill_paid_at?: string | null; bill_penalty_pkr?: number; bill_due_pkr?: number | null;
+  payment_due_at?: string | null; bill_paid_at?: string | null; bill_penalty_pkr?: number; bill_due_pkr?: number | null; delivery_stage?: string | null;
   van_name?: string | null; driver_name?: string | null; driver_phone?: string | null; locker_code_requested?: boolean; locker_code_shared?: boolean;
 }
 export interface OrderCreate {
@@ -118,6 +118,7 @@ export interface VanTaskOut {
   drop_count: number; pickup_count: number; priority: number; distance_km: number;
   confirmed_drop?: number | null; confirmed_pickup?: number | null; confirmed_at?: string | null;
   order_ref?: string | null; customer_name?: string | null; customer_phone?: string | null; order_total_pkr?: number | null; delivery_charge_pkr?: number | null; delivery_km?: number | null; payment_note?: string | null; station_label?: string | null;
+  delivery_stage?: string | null; pack_id?: string | null; slot_id?: string | null;
   locker_code_state?: 'NONE' | 'REQUESTED' | 'SHARED'; locker_code?: string | null;
 }
 
@@ -152,4 +153,10 @@ export interface QuoteRequest {
 export interface GuestSwapRequest extends QuoteRequest {
   guest_name?: string | null; phone?: string | null; payment_method: PaymentMethod; payment_reference: string;
   amount_paid_pkr?: number | null; mode?: OrderMode; delivery_address?: string | null; delivery_lat?: number | null; delivery_lon?: number | null;
+}
+
+export interface RiderSummary {
+  held_pack: { id: string; soc: number; soh: number; state: string; temperature_c: number } | null;
+  unpaid_bills: { order_id: number; ref: string; due_pkr: number; due_at: string }[];
+  plan_alert: { plan_id: number; plan_name: string; price_pkr: number; ends_at: string; days_left: number } | null;
 }

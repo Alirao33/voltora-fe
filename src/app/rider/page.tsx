@@ -3,16 +3,33 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Rider } from '@/lib/endpoints';
 import { useApi } from '@/lib/hooks';
-import { dt } from '@/lib/format';
+import { useEffect, useState } from 'react';
+import { dt, ddmmyy, pkr } from '@/lib/format';
 import { useAuth } from '@/components/AuthProvider';
 import { OrdersTable } from '@/components/OrdersTable';
-import { Badge, Card, ErrorBox, Loading, PageHeader, Stat } from '@/components/ui';
+import { Badge, Card, ErrorBox, Loading, Modal, PageHeader, Stat } from '@/components/ui';
 
 export default function RiderHome() {
   const { user } = useAuth();
   const router = useRouter();
   const pass = useApi(() => Rider.lockerPass(), []);
   const orders = useApi(() => Rider.orders(5), []);
+
+  const summary = useApi(() => Rider.summary(), []);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const alert = summary.data?.plan_alert;
+  // Opens once per login session when the plan is close to ending.
+  useEffect(() => {
+    if (!alert) return;
+    try {
+      const key = `voltora.planAlert.${alert.ends_at}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {}
+    setAlertOpen(true);
+  }, [alert]);
+  const held = summary.data?.held_pack;
+  const bills = summary.data?.unpaid_bills || [];
 
   const active = orders.data?.find((o) => ['PENDING_PAYMENT', 'AWAITING_APPROVAL', 'PAID', 'IN_PROGRESS'].includes(o.status));
   const cur = pass.data?.current;
@@ -29,6 +46,41 @@ export default function RiderHome() {
           </>
         )}
       />
+
+      <Card title="Your battery pack">
+        {summary.loading ? <Loading /> : held ? (
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="font-mono text-5xl font-extrabold tracking-tight text-ink-900">{held.id}</div>
+              <div className="mt-2 flex items-center gap-2"><Badge value={held.state} /><span className="text-sm text-ink-600">SoH {Math.round(held.soh)}%</span></div>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl font-bold text-volt-700">{Math.round(held.soc)}%</div>
+              <div className="text-sm text-ink-600">charge (live)</div>
+            </div>
+          </div>
+        ) : <div className="py-4 text-sm text-ink-600">You are not holding a pack. Start a swap to get one.</div>}
+      </Card>
+
+      {bills.length > 0 && (
+        <div className="space-y-2">
+          {bills.map((b) => (
+            <Link key={b.order_id} href={`/rider/orders/${b.order_id}`} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-300 bg-red-50 p-4 hover:bg-red-100">
+              <div className="text-sm"><b className="text-red-700">{b.ref} unpaid: {pkr(b.due_pkr)}</b><div className="font-semibold text-red-600">Pay Now · Due Date: {ddmmyy(b.due_at)}</div></div>
+              <span className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white">Pay Now</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <Modal open={alertOpen} onClose={() => setAlertOpen(false)} title="Your plan is ending soon" footer={
+        <>
+          <button onClick={() => setAlertOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-100">Later</button>
+          <Link href="/rider/plans" onClick={() => setAlertOpen(false)} className="rounded-lg bg-volt-500 px-4 py-2 text-sm font-medium text-volt-950 hover:bg-volt-600">Pay Now</Link>
+        </>
+      }>
+        {alert && <p className="text-sm text-ink-700"><b>{alert.plan_name}</b> ends on <b>{ddmmyy(alert.ends_at)}</b> ({Math.ceil(alert.days_left)} day{Math.ceil(alert.days_left) === 1 ? '' : 's'} left). Pay Now to keep your locker pass. Cancellations do not give a refund.</p>}
+      </Modal>
 
       {active && (
         <Link href={`/rider/orders/${active.id}`} className="flex items-center justify-between gap-4 rounded-xl border border-volt-300 bg-volt-50 p-4 hover:bg-volt-100">

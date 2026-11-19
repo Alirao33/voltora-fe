@@ -83,7 +83,7 @@ function BatteriesInner() {
       )}
 
       {tab === 'plan' && (
-        <Card title="Charging plan" subtitle="Which packs to charge next, given tariffs and forecast demand." actions={<Button size="sm" variant="ghost" onClick={plan.reload}>Recompute</Button>}>
+        <Card title="Charging plan" subtitle="Charging windows for depleted and charging packs. Times are estimates from the missing energy and an assumed 3 kW charger." actions={<Button size="sm" variant="ghost" loading={act.busy} onClick={async () => { const r = await act.run(() => Admin.recomputeChargingPlan(), 'Charging windows recomputed'); if (r) plan.setData(r); }}>Recompute</Button>}>
           <ErrorBox error={plan.error} onRetry={plan.reload} />
           {plan.loading ? <Loading /> : <><AutoView data={plan.data} /><RawJson data={plan.data} /></>}
         </Card>
