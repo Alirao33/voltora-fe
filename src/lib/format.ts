@@ -52,15 +52,33 @@ export function toNum(v: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function getPosition(): Promise<{ lat: number; lon: number }> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) return reject(new Error('Location is not available in this browser'));
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: +p.coords.latitude.toFixed(6), lon: +p.coords.longitude.toFixed(6) }),
-      (e) => reject(new Error(e.message || 'Could not get your location')),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  });
+const geoOnce = (opts: PositionOptions) =>
+  new Promise<GeolocationPosition>((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, opts));
+
+function geoMessage(e: unknown): string {
+  const code = (e as GeolocationPositionError)?.code;
+  if (code === 1) return 'Location is blocked. Allow location for this site in your browser settings, then try again.';
+  if (code === 2) return 'Your device could not find its location. Turn on location services and try again.';
+  if (code === 3) return 'Finding your location took too long. Please try again.';
+  return 'Could not get your location.';
+}
+
+/** Rider position. Tries the fast network-based fix first, then a precise GPS fix; explains failures in plain words. */
+export async function getPosition(): Promise<{ lat: number; lon: number }> {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) throw new Error('Location is not available in this browser.');
+  if (!window.isSecureContext) throw new Error('Location only works on a secure (https) page.');
+  let p: GeolocationPosition;
+  try {
+    p = await geoOnce({ enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });
+  } catch (e) {
+    if ((e as GeolocationPositionError)?.code === 1) throw new Error(geoMessage(e));
+    try {
+      p = await geoOnce({ enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    } catch (e2) {
+      throw new Error(geoMessage(e2));
+    }
+  }
+  return { lat: +p.coords.latitude.toFixed(6), lon: +p.coords.longitude.toFixed(6) };
 }
 
 export function saveBlob(blob: Blob, filename: string) {

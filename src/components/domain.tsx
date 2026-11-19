@@ -47,7 +47,7 @@ export function StationCard({ s, selected, onClick }: { s: any; selected?: boole
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate font-medium text-ink-900">{stationName(s)}</div>
-          <div className="mt-0.5 truncate text-sm text-ink-600">{s.address || stationId(s)}</div>
+          <div className="mt-0.5 truncate text-sm text-ink-600">{s.address || stationId(s)}{typeof s.distance_km === 'number' && <> · <b className="text-ink-800">{s.distance_km < 1 ? `${Math.round(s.distance_km * 1000)} m` : `${s.distance_km.toFixed(1)} km`} away</b></>}</div>
         </div>
         {stock != null ? (
           <div className="text-right">

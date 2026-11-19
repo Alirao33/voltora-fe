@@ -29,7 +29,7 @@ export default function StationsPage() {
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Search"><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name or area" /></Field>
           <Field label="Radius (km)"><Input type="number" min={1} max={100} value={radius} onChange={(e) => setRadius(Math.min(100, Math.max(1, +e.target.value || 25)))} className="w-24" /></Field>
-          <Button variant="secondary" onClick={() => getPosition().then(setPos).catch((e) => toast.error(e.message))}>📍 Use my location</Button>
+          <Button variant="secondary" onClick={() => getPosition().then((p) => { setPos(p); setSel(null); toast.success('Showing stations nearest to you'); }).catch((e) => toast.error(e.message))}>📍 Use my location</Button>
         </div>
       </div>
 
