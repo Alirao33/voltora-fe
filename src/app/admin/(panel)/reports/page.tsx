@@ -69,7 +69,7 @@ export default function Reports() {
             { key: 'rider', header: 'Rider' },
             { key: 'soc', header: 'SoC used', align: 'right', render: (r) => pct(r.soc_used_pct) },
             { key: 'soh', header: 'SoH', align: 'right', render: (r) => pct(r.soh_pct) },
-            { key: 'paid', header: 'Paid', align: 'right', render: (r) => pkr(r.paid_pkr) },
+            { key: 'paid', header: 'Paid', align: 'right', render: (r) => r.status === 'UNPAID' ? <span className="font-semibold text-red-600">Unpaid {pkr(r.unpaid_pkr)}</span> : pkr(r.paid_pkr) },
             { key: 'refunded', header: 'Refunded', align: 'right', render: (r) => pkr(r.refunded_pkr) },
             { key: 'net', header: 'Net', align: 'right', render: (r) => <b>{pkr(r.net_pkr)}</b> },
           ]} />
@@ -79,6 +79,7 @@ export default function Reports() {
             <span>Paid <b>{pkr(log.data.totals.paid_pkr)}</b></span>
             <span>Refunded <b>{pkr(log.data.totals.refunded_pkr)}</b></span>
             <span>Net <b>{pkr(log.data.totals.net_pkr)}</b></span>
+            {log.data.totals.unpaid_pkr > 0 && <span className="font-semibold text-red-600">Unpaid {pkr(log.data.totals.unpaid_pkr)}</span>}
           </div>
         )}
       </Card>

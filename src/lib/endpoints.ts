@@ -85,7 +85,7 @@ export const Admin = {
   battery: (id: string) => api<T.BatteryOut>(`/api/admin/batteries/${enc(id)}`),
   setBatteryState: (id: string, b: { state: T.BatteryState; station_id?: string | null; locker_id?: string | null }) =>
     api<T.BatteryOut>(`/api/admin/batteries/${enc(id)}/state`, { method: 'PATCH', body: b }),
-  chargingPlan: () => api<any>('/api/admin/charging-plan'),
+  chargingPlan: () => api<any>('/api/admin/charging/plan'),
   telemetryHistory: (id: string, hours = 24, limit = 1000) =>
     api<T.TelemetryOut[]>(`/api/admin/telemetry/${enc(id)}/history`, { query: { hours, limit } }),
   // pricing & plans
@@ -114,7 +114,7 @@ export const Admin = {
   alerts: (q: { resolved?: boolean; type?: string; limit?: number }) => api<T.AlertOut[]>('/api/admin/alerts', { query: q }),
   ackAlert: (id: number) => api<T.AlertOut>(`/api/admin/alerts/${id}/ack`, { method: 'POST' }),
   resolveAlert: (id: number) => api<T.AlertOut>(`/api/admin/alerts/${id}/resolve`, { method: 'POST' }),
-  auditLogs: (q: { action?: string; limit?: number }) => api<T.AuditOut[]>('/api/admin/audit-logs', { query: q }),
+  auditLogs: (q: { action?: string; limit?: number }) => api<T.AuditOut[]>('/api/admin/audit', { query: q }),
   // fleet
   vans: () => api<T.VanOut[]>('/api/admin/vans'),
   createVan: (b: Partial<T.VanOut> & { name: string }) => api<T.VanOut>('/api/admin/vans', { method: 'POST', body: b }),

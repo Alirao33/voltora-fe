@@ -12,6 +12,8 @@ const LINKS = [
   { href: '/swap', label: 'Quick swap' },
 ];
 
+const portalLabel = (role?: string) => (role === 'RIDER' ? 'My rider portal' : role === 'DRIVER' ? 'My route' : 'Open dashboard');
+
 export function PublicHeader() {
   const { user } = useAuth();
   const path = usePathname();
@@ -30,7 +32,7 @@ export function PublicHeader() {
         <div className="hidden items-center gap-2 md:flex">
           {user ? (
             <Link href={homeFor(user)} className="rounded-lg bg-volt-800 px-4 py-2.5 text-body font-medium text-white transition-colors duration-150 hover:bg-volt-900">
-              Open dashboard
+              {portalLabel(user.role)}
             </Link>
           ) : (
             <>
@@ -49,7 +51,7 @@ export function PublicHeader() {
             <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="block rounded-md px-2 py-3 text-body font-medium text-ink-700">{l.label}</Link>
           ))}
           <Link href={user ? homeFor(user) : '/login'} className="mt-2 block rounded-lg bg-volt-800 px-3 py-3 text-center text-body font-medium text-white">
-            {user ? 'Open dashboard' : 'Sign in'}
+            {user ? portalLabel(user.role) : 'Sign in'}
           </Link>
         </div>
       )}
@@ -58,14 +60,17 @@ export function PublicHeader() {
 }
 
 export function PublicFooter() {
+  const { user } = useAuth();
   return (
     <footer className="bg-volt-950 text-volt-100">
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-8 text-cell sm:flex-row sm:items-center sm:justify-between">
         <span className="text-volt-200">© {new Date().getFullYear()} Voltora · Battery swapping for Pakistan&apos;s riders</span>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/admin/login" className="rounded-lg border border-volt-500 bg-white px-4 py-2 font-medium text-volt-900 transition-colors hover:bg-volt-100">Operator login</Link>
-          <Link href="/login?role=driver" className="rounded-lg border border-volt-500 bg-volt-800 px-4 py-2 font-medium text-white transition-colors hover:bg-volt-700">Driver login</Link>
-        </div>
+        {!user && (
+          <div className="flex flex-wrap gap-3">
+            <Link href="/admin/login" className="rounded-lg border border-volt-500 bg-white px-4 py-2 font-medium text-volt-900 transition-colors hover:bg-volt-100">Operator login</Link>
+            <Link href="/login?role=driver" className="rounded-lg border border-volt-500 bg-volt-800 px-4 py-2 font-medium text-white transition-colors hover:bg-volt-700">Driver login</Link>
+          </div>
+        )}
       </div>
     </footer>
   );
