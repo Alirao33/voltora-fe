@@ -28,8 +28,8 @@
 
   /* Flat page background. Body copy: 15px on a 1.5 line height, normal weight. */
   body {
-    font-size: 1.125rem;
-    line-height: 1.75rem;
+    font-size: 1.1875rem;
+    line-height: 1.8rem;
     font-weight: 400;
     letter-spacing: normal;
     background: var(--canvas);
@@ -46,8 +46,8 @@
 @layer components {
   /* Small uppercase caption above a value or an input. */
   .label {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.3rem;
     font-weight: 600;
     letter-spacing: 0.03em;
     text-transform: uppercase;

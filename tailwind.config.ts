@@ -11,18 +11,18 @@ export default {
       // Type scale. Bold (600-700) is only for page titles, section titles and stat numbers.
       fontSize: {
         // Raised again so every page reads comfortably. Bold (600-700) is only for titles and stat numbers.
-        xs: ['0.875rem', { lineHeight: '1.375rem' }], // 14px
-        sm: ['1rem', { lineHeight: '1.5rem' }], // 16px
-        base: ['1.125rem', { lineHeight: '1.75rem' }], // 18px
-        lg: ['1.25rem', { lineHeight: '1.875rem' }], // 20px
-        xl: ['1.5rem', { lineHeight: '2rem' }], // 24px
-        '2xl': ['1.75rem', { lineHeight: '2.25rem' }], // 28px
-        page: ['2.125rem', { lineHeight: '2.625rem', fontWeight: '700' }], // 34px page titles
-        section: ['1.5rem', { lineHeight: '2rem', fontWeight: '600' }], // 24px section and card titles
-        body: ['1.125rem', { lineHeight: '1.75rem' }], // 18px
-        cell: ['1.0625rem', { lineHeight: '1.625rem' }], // 17px table cells
-        label: ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.03em' }], // 14px, used uppercase
-        stat: ['2.5rem', { lineHeight: '2.75rem', fontWeight: '700' }], // 40px stat numbers
+        xs: ['0.9375rem', { lineHeight: '1.4rem' }], // 15px
+        sm: ['1.0625rem', { lineHeight: '1.6rem' }], // 17px
+        base: ['1.1875rem', { lineHeight: '1.8rem' }], // 19px
+        lg: ['1.3125rem', { lineHeight: '1.9rem' }], // 21px
+        xl: ['1.625rem', { lineHeight: '2.1rem' }], // 26px
+        '2xl': ['1.875rem', { lineHeight: '2.3rem' }], // 30px
+        page: ['2.375rem', { lineHeight: '2.875rem', fontWeight: '700' }], // 38px page titles
+        section: ['1.625rem', { lineHeight: '2.1rem', fontWeight: '600' }], // 26px section and card titles
+        body: ['1.1875rem', { lineHeight: '1.8rem' }], // 19px
+        cell: ['1.125rem', { lineHeight: '1.7rem' }], // 18px table cells
+        label: ['0.9375rem', { lineHeight: '1.3rem', letterSpacing: '0.03em' }], // 15px, used uppercase
+        stat: ['2.75rem', { lineHeight: '3rem', fontWeight: '700' }], // 44px stat numbers
       },
       colors: {
         // Emerald brand. 500 is the brand colour, 600 its hover, 700 the deep green for links, icons and focus rings.

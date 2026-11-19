@@ -19,7 +19,16 @@ export default function RiderHome() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`Hi ${user?.full_name?.split(' ')[0] || user?.username || 'rider'} 👋`} desc="Ready for a fresh battery?" />
+      <PageHeader
+        title={`Hi ${user?.full_name?.split(' ')[0] || user?.username || 'rider'} 👋`}
+        desc="Ready for a fresh battery?"
+        actions={!active && (
+          <>
+            <Link href="/rider/swap" className="rounded-xl bg-white px-5 py-3 text-base font-semibold text-volt-900 hover:bg-volt-100">Start a swap</Link>
+            <Link href="/stations" className="rounded-xl border border-white/60 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Find a station</Link>
+          </>
+        )}
+      />
 
       {active && (
         <Link href={`/rider/orders/${active.id}`} className="flex items-center justify-between gap-4 rounded-xl border border-volt-300 bg-volt-50 p-4 hover:bg-volt-100">
@@ -32,13 +41,6 @@ export default function RiderHome() {
           </div>
           <Badge value={active.status} />
         </Link>
-      )}
-
-      {!active && (
-        <div className="flex flex-wrap gap-3">
-          <Link href="/rider/swap" className="rounded-xl bg-volt-500 px-5 py-3 text-base font-medium text-volt-950 hover:bg-volt-600">Start a swap</Link>
-          <Link href="/stations" className="rounded-xl border border-line bg-white px-5 py-3 text-base font-medium text-ink-800 hover:bg-ink-50">Find a station</Link>
-        </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">

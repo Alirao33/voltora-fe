@@ -22,7 +22,7 @@ export function Button({ variant = 'primary', size = 'md', loading, icon, classN
       {...p}
       disabled={disabled || loading}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-[10px] text-[17px] font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:border-ink-200 disabled:bg-ink-100 disabled:text-ink-500',
+        'inline-flex items-center justify-center gap-2 rounded-[10px] text-[18px] font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:border-ink-200 disabled:bg-ink-100 disabled:text-ink-500',
         size === 'sm' && 'h-9 px-3',
         size === 'md' && 'h-11 px-5',
         size === 'lg' && 'h-12 px-6',
@@ -138,11 +138,11 @@ const DEFAULT_ICON = <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" st
 /** Equal-height stat card: green icon chip, small uppercase label, large dark number. */
 export function Stat({ label, value, sub, tone, icon }: { label: ReactNode; value: ReactNode; sub?: ReactNode; tone?: 'good' | 'warn' | 'bad'; icon?: ReactNode }) {
   return (
-    <div className="surface flex h-full min-h-[140px] items-start gap-5 p-6">
-      <span className={cx('flex h-12 w-12 shrink-0 items-center justify-center rounded-xl', chipFor(label))}>{icon ?? DEFAULT_ICON}</span>
-      <div className="min-w-0">
+    <div className="surface flex h-full min-h-[120px] flex-col items-start gap-3 p-4 sm:min-h-[140px] sm:flex-row sm:gap-5 sm:p-6">
+      <span className={cx('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12', chipFor(label))}>{icon ?? DEFAULT_ICON}</span>
+      <div className="min-w-0 max-w-full">
         <div className="label">{label}</div>
-        <div className={cx('num mt-1 whitespace-nowrap text-[2.125rem] font-bold leading-10', tone === 'warn' && 'text-amber-700', tone === 'bad' && 'text-red-600', (!tone || tone === 'good') && 'text-ink-900')}>{value}</div>
+        <div className={cx('num mt-1 break-words text-[1.75rem] font-bold leading-9 2xl:text-[2.125rem] 2xl:leading-10', tone === 'warn' && 'text-amber-700', tone === 'bad' && 'text-red-600', (!tone || tone === 'good') && 'text-ink-900')}>{value}</div>
         {sub && <div className="mt-0.5 text-cell text-ink-600">{sub}</div>}
       </div>
     </div>
@@ -164,7 +164,7 @@ export function Badge({ value, className }: { value: unknown; className?: string
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[15px] font-semibold leading-none',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[16px] font-semibold leading-none',
         tone === 'good' && 'bg-status-success-bg text-status-success-fg',
         tone === 'info' && 'bg-status-info-bg text-status-info-fg',
         tone === 'warn' && 'bg-status-warning-bg text-status-warning-fg',
@@ -276,7 +276,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { valu
           role="tab"
           aria-selected={value === t.value}
           onClick={() => onChange(t.value)}
-          className={cx('h-9 whitespace-nowrap rounded-lg px-4 text-[17px] font-semibold transition-colors duration-150', value === t.value ? 'bg-white text-ink-900 shadow-card' : 'text-ink-600 hover:text-ink-900')}
+          className={cx('h-9 whitespace-nowrap rounded-lg px-4 text-[18px] font-semibold transition-colors duration-150', value === t.value ? 'bg-white text-ink-900 shadow-card' : 'text-ink-600 hover:text-ink-900')}
         >
           {t.label}
         </button>

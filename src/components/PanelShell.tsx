@@ -73,7 +73,7 @@ export function PanelShell({ nav, children, area, logoutTo = '/login' }: { nav: 
       <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-volt-500/20 text-body font-medium text-volt-300">{initial}</div>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[17px] font-semibold text-white">{user?.full_name || user?.username || user?.phone}</div>
+          <div className="truncate text-[18px] font-semibold text-white">{user?.full_name || user?.username || user?.phone}</div>
           <div className="text-sm text-ink-300">{user?.role?.toLowerCase()}{user?.is_vip ? ' · VIP' : ''}</div>
         </div>
         <button
@@ -95,7 +95,7 @@ export function PanelShell({ nav, children, area, logoutTo = '/login' }: { nav: 
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-gradient-to-b from-ink-950 via-[#0c1f2a] to-[#0a3a2c] lg:flex">
         <div className="flex h-16 items-center gap-3 px-5">
           <Logo dark />
-          <span className="rounded-md bg-white/10 px-2 py-1 text-[15px] font-semibold uppercase tracking-wide text-ink-100">{area}</span>
+          <span className="rounded-md bg-white/10 px-2 py-1 text-[16px] font-semibold uppercase tracking-wide text-ink-100">{area}</span>
         </div>
         {navEl}
         {userEl}
